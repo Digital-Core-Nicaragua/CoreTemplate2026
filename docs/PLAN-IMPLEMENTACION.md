@@ -35,9 +35,9 @@
 - [x] `docs/PLAN-IMPLEMENTACION.md`
 - [x] `docs/architecture/ARQUITECTURA.md`
 - [x] `docs/architecture/CONVENCIONES.md`
-- [x] `docs/analysis/Auth/REQUISITOS.md`
-- [x] `docs/analysis/Auth/CASOS-DE-USO.md`
-- [x] `docs/analysis/Auth/MODELO-DATOS.md`
+- [x] `docs/analysis/Auth/REQUISITOS.md` — reemplazado por `docs/Auth/02-Analisis-Tradicional/`
+- [x] `docs/analysis/Auth/CASOS-DE-USO.md` — reemplazado por `docs/Auth/02-Analisis-Tradicional/`
+- [x] `docs/analysis/Auth/MODELO-DATOS.md` — reemplazado por `docs/Auth/02-Analisis-Tradicional/`
 - [x] `docs/analysis/Catalogos/REQUISITOS-Y-CASOS-DE-USO.md`
 - [x] `docs/diagrams/arquitectura.puml`
 - [x] `docs/diagrams/auth-flow.puml`
@@ -77,7 +77,7 @@
 - [x] `docs/Auth/03-Implementacion/02-GUIA-AGGREGATES.md`
 - [x] `docs/Auth/03-Implementacion/03-GUIA-CONFIGURACION.md`
 - [x] `docs/Auth/03-Implementacion/04-GUIA-MIGRACION.md`
-- [ ] `README.md` raíz
+- [x] `README.md` raíz
 
 ---
 

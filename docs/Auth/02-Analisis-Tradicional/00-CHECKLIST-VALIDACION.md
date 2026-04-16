@@ -91,17 +91,46 @@
 
 ## ✅ Fase 4: Documentación
 
-- [x] `README.md` del módulo Auth
+- [x] `README.md` raíz actualizado
 - [x] `docs/Auth/README.md`
 - [x] `docs/Auth/01-EventStorming/README.md`
+- [x] `docs/Auth/01-EventStorming/01-BIG-PICTURE.md`
+- [x] `docs/Auth/01-EventStorming/02-PROCESS-LEVEL-PARTE1.md`
+- [x] `docs/Auth/01-EventStorming/02-PROCESS-LEVEL-PARTE2.md`
+- [x] `docs/Auth/01-EventStorming/02-PROCESS-LEVEL-PARTE3.md`
+- [x] `docs/Auth/01-EventStorming/03-DESIGN-LEVEL-PARTE1.md`
+- [x] `docs/Auth/01-EventStorming/03-DESIGN-LEVEL-PARTE2.md`
+- [x] `docs/Auth/01-EventStorming/03-DESIGN-LEVEL-PARTE3.md`
+- [x] `docs/Auth/01-EventStorming/04-BOUNDED-CONTEXT-CANVAS.md`
+- [x] `docs/Auth/01-EventStorming/05-CONTEXT-MAPPING.md`
+- [x] `docs/Auth/01-EventStorming/06-EVENT-STORMING-LEGEND.md`
+- [x] `docs/Auth/01-EventStorming/07-HOTSPOTS-RESOLUTION.md`
+- [x] `docs/Auth/02-Analisis-Tradicional/00-CHECKLIST-VALIDACION.md`
 - [x] `docs/Auth/02-Analisis-Tradicional/01-CASOS-DE-USO-00-INDICE.md`
+- [x] `docs/Auth/02-Analisis-Tradicional/01-CASOS-DE-USO-01-AUTENTICACION.md`
+- [x] `docs/Auth/02-Analisis-Tradicional/01-CASOS-DE-USO-02-SESIONES.md`
+- [x] `docs/Auth/02-Analisis-Tradicional/01-CASOS-DE-USO-03-AUTORIZACION.md`
+- [x] `docs/Auth/02-Analisis-Tradicional/01-CASOS-DE-USO-05-CONFIGURACION.md`
 - [x] `docs/Auth/02-Analisis-Tradicional/02-MODELO-DOMINIO.md`
+- [x] `docs/Auth/02-Analisis-Tradicional/03-EVENTOS-DOMINIO.md`
 - [x] `docs/Auth/02-Analisis-Tradicional/04-REGLAS-NEGOCIO.md`
+- [x] `docs/Auth/02-Analisis-Tradicional/05-CONTRATOS-API.md`
+- [x] `docs/Auth/02-Analisis-Tradicional/06-ISSUES-CRITICOS.md`
 - [x] `docs/Auth/02-Analisis-Tradicional/07-REQUERIMIENTOS-FUNCIONALES.md`
+- [x] `docs/Auth/02-Analisis-Tradicional/08-REQUERIMIENTOS-NO-FUNCIONALES.md`
 - [x] `docs/Auth/02-Analisis-Tradicional/09-GLOSARIO.md`
+- [x] `docs/Auth/02-Analisis-Tradicional/10-MODELO-DATOS.md`
+- [x] `docs/Auth/02-Analisis-Tradicional/11-ARQUITECTURA.md`
+- [x] `docs/Auth/02-Analisis-Tradicional/12-TESTING.md`
+- [x] `docs/Auth/02-Analisis-Tradicional/13-DIAGRAMAS.md`
+- [x] `docs/Auth/03-Implementacion/01-ESTRUCTURA-PROYECTOS.md`
+- [x] `docs/Auth/03-Implementacion/02-GUIA-AGGREGATES.md`
+- [x] `docs/Auth/03-Implementacion/03-GUIA-CONFIGURACION.md`
+- [x] `docs/Auth/03-Implementacion/04-GUIA-MIGRACION.md`
+- [x] `docs/Auth/Diagramas/auth-flow.puml`
+- [x] `docs/Auth/Diagramas/modelo-datos.puml`
 - [x] `docs/ALCANCE.md` actualizado
 - [x] `docs/PLAN-IMPLEMENTACION.md` actualizado (fases 0-22)
-- [x] `README.md` raíz actualizado
 
 ---
 
