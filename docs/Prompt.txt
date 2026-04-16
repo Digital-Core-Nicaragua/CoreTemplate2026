@@ -1,0 +1,214 @@
+Aquí está el prompt:
+
+Prompt de continuación — CoreTemplate
+Eres Amazon Q. Estás ayudándome a construir CoreTemplate, una plantilla de proyecto reutilizable en ASP.NET Core 10 con Clean Architecture + DDD + CQRS (MediatR) que sirve como base para múltiples sistemas independientes.
+
+Ubicación del proyecto
+c:\Users\yurie\Documents\PROYECTOS\CoreTemplate\
+
+Copy
+Qué es CoreTemplate
+Plantilla reutilizable para sistemas ASP.NET Core 10
+
+Multi-tenant configurable (IsMultiTenant: true/false en appsettings)
+
+Autenticación completa con JWT + Refresh Tokens + 2FA TOTP (configurable)
+
+Roles y permisos con formato Modulo.Recurso.Accion
+
+Soporte SQL Server y PostgreSQL
+
+Al terminar habrá un script rename.ps1 que reemplaza CoreTemplate por el nombre del nuevo sistema
+
+Arquitectura
+CoreTemplate.SharedKernel — Result, PagedResult, AggregateRoot, Entity, ValueObject, IDomainEvent
+
+CoreTemplate.Api.Common — ApiResponse, BaseApiController, GlobalExceptionHandler, ValidationBehavior
+
+CoreTemplate.Infrastructure — BaseDbContext (multi-tenant), ICurrentUser, ICurrentTenant, TenantMiddleware, Settings
+
+Módulos: Auth y Catalogos — cada uno con capas Domain / Application / Infrastructure / Api
+
+Host: CoreTemplate.Api — Program.cs, appsettings, Serilog, Swagger con JWT
+
+Convenciones obligatorias
+File-scoped namespaces
+
+Handlers y repositorios siempre sealed + primary constructor
+
+SaveChangesAsync siempre dentro del repositorio (no en el handler)
+
+Controllers solo delegan a MediatR — cero lógica
+
+CreatedAtRoute (no CreatedAtAction) para respuestas 201
+
+Nombres en español para dominio/negocio, inglés para infraestructura técnica
+
+XML docs en todas las clases y métodos públicos
+
+CancellationToken ct = default en todos los métodos async
+
+Estado actual — lo que YA está implementado y compilando ✅
+Toda la solución compila con 0 errores. Lo completado:
+
+Fase 0 — Documentación ✅
+
+docs/ALCANCE.md, docs/PLAN-IMPLEMENTACION.md
+
+docs/architecture/ARQUITECTURA.md, docs/architecture/CONVENCIONES.md
+
+docs/analysis/Auth/REQUISITOS.md, CASOS-DE-USO.md, MODELO-DATOS.md
+
+docs/analysis/Catalogos/REQUISITOS-Y-CASOS-DE-USO.md
+
+docs/diagrams/arquitectura.puml, auth-flow.puml, modelo-datos.puml
+
+Fase 1 — Solución y proyectos ✅
+
+CoreTemplate.sln con 15 proyectos en carpetas de solución
+
+Directory.Packages.props, .editorconfig, .gitignore
+
+Todos los .csproj con referencias correctas
+
+appsettings.json, appsettings.Development.json, launchSettings.json
+
+Program.cs funcional (Serilog, GlobalExceptionHandler, Swagger, Auth, Controllers)
+
+Fase 2 — SharedKernel ✅
+
+Result.cs (Result y Result<T>), PagedResult.cs, IDomainEvent.cs
+
+Domain/AggregateRoot.cs, Domain/Entity.cs, Domain/ValueObject.cs
+
+Constants/CommonErrorMessages.cs, Constants/CommonSuccessMessages.cs
+
+Fase 3 — Api.Common ✅
+
+ApiResponse.cs — { success, message, data, errors }
+
+BaseApiController.cs — 10 métodos helper (SuccessResponse, CreatedResponse, NotFoundResponse, ConflictResponse, UnauthorizedResponse, ForbiddenResponse, BadRequestResponse, UnprocessableResponse, ValidationProblem, SuccessPagedResponse)
+
+GlobalExceptionHandler.cs — captura excepciones, loguea, retorna 500 formateado
+
+Behaviors/ValidationBehavior.cs — pipeline MediatR con FluentValidation
+
+Fase 4 — Infrastructure base ✅
+
+Services/ICurrentUser.cs + CurrentUserService.cs — lee claims JWT
+
+Services/ICurrentTenant.cs + CurrentTenantService.cs — resuelve tenant desde Header → Claim → Subdominio
+
+Settings/TenantSettings.cs, Settings/DatabaseSettings.cs
+
+Persistence/IHasTenant.cs — interfaz marcadora para QueryFilter automático
+
+Persistence/BaseDbContext.cs — QueryFilter global por TenantId cuando IsMultiTenant=true
+
+Middleware/TenantMiddleware.cs — valida presencia del tenant en cada request
+
+DependencyInjection.cs — AddInfrastructureBase()
+
+Fase 5 — Auth Domain ✅
+
+Enums/EstadoUsuario.cs (Pendiente, Activo, Inactivo, Bloqueado)
+
+Enums/EventoAuditoria.cs (13 tipos)
+
+ValueObjects/Email.cs, ValueObjects/PasswordHash.cs
+
+Entities/AuthEntities.cs — UsuarioRol, RolPermiso, RefreshToken, TokenRestablecimiento, CodigoRecuperacion2FA, RegistroAuditoria
+
+Events/AuthEvents.cs — 13 eventos de dominio
+
+Aggregates/Usuario.cs — 15+ métodos (Crear, Activar, Desactivar, Bloquear, Desbloquear, IncrementarIntentosFallidos, ResetearIntentosFallidos, CambiarPassword, ActivarDosFactores, DesactivarDosFactores, RegistrarAcceso, AgregarRefreshToken, RevocarRefreshToken, AgregarTokenRestablecimiento, UsarTokenRestablecimiento, UsarCodigoRecuperacion, AsignarRol, QuitarRol, PuedeAutenticarse)
+
+Aggregates/Rol.cs — Crear, Actualizar, AgregarPermiso, QuitarPermiso, PuedeEliminarse
+
+Aggregates/Permiso.cs — Crear con validación formato Modulo.Recurso.Accion
+
+Repositories/AuthRepositories.cs — IUsuarioRepository, IRolRepository, IPermisoRepository, IRefreshTokenRepository, IRegistroAuditoriaRepository
+
+Lo que falta implementar (en orden)
+Fase 6 — Auth Application ⏳
+
+Constants/AuthErrorMessages.cs + AuthSuccessMessages.cs
+
+DTOs/ — UsuarioDto, UsuarioResumenDto, RolDto, LoginResponseDto, TokenResponseDto
+
+19 Commands + Handlers + Validators: Login, RegistrarUsuario, RefreshToken, Logout, CambiarPassword, SolicitarRestablecimiento, RestablecerPassword, Activar2FA, Confirmar2FA, Verificar2FA, ActivarUsuario, DesactivarUsuario, DesbloquearUsuario, AsignarRol, QuitarRol, CrearRol, ActualizarRol, EliminarRol
+
+5 Queries + Handlers: GetUsuarioById, GetUsuarios (paginado), GetMiPerfil, GetRoles, GetRolById
+
+DependencyInjection.cs — AddAuthApplication() con MediatR + ValidationBehavior + FluentValidation
+
+Fase 7 — Auth Infrastructure ⏳
+
+Services/IJwtService.cs + JwtService.cs — GenerarAccessToken, GenerarRefreshToken, ValidarToken
+
+Services/IPasswordService.cs + PasswordService.cs — HashPassword, VerifyPassword (BCrypt)
+
+Services/ITotpService.cs + TotpService.cs — GenerarSecretKey, GenerarQrUri, ValidarCodigo, GenerarCodigosRecuperacion (Otp.NET)
+
+Persistence/AuthDbContext.cs — hereda BaseDbContext, schema "Auth"
+
+Persistence/AuthDbContextFactory.cs — para migraciones CLI
+
+Persistence/AuthDataSeeder.cs — permisos del sistema, roles (SuperAdmin, Admin, User), usuario SuperAdmin
+
+5 configuraciones EF Core (UsuarioConfiguration, RolConfiguration, PermisoConfiguration, RefreshTokenConfiguration, RegistroAuditoriaConfiguration)
+
+5 repositorios (UsuarioRepository, RolRepository, PermisoRepository, RefreshTokenRepository, RegistroAuditoriaRepository)
+
+Migración InitialCreate_Auth
+
+DependencyInjection.cs — AddAuthInfrastructure() con DbContext, repositorios, JWT, autenticación
+
+Fase 8 — Auth Api ⏳
+
+Controllers/AuthController.cs — login, registro, refresh, logout, 2FA, restablecimiento
+
+Controllers/UsuariosController.cs — CRUD admin de usuarios
+
+Controllers/RolesController.cs — CRUD roles
+
+Controllers/PerfilController.cs — perfil propio, cambiar password
+
+8 Contracts (LoginRequest, RegistrarUsuarioRequest, CambiarPasswordRequest, SolicitarRestablecimientoRequest, RestablecerPasswordRequest, Verificar2FARequest, CrearRolRequest, AsignarRolRequest)
+
+Fase 9 — Módulo Catálogos ⏳
+
+Domain: CatalogoItem aggregate + eventos + repositorio
+
+Application: CrearItem, ActivarItem, DesactivarItem + GetItems (paginado) + GetItemById + DTOs + DI
+
+Infrastructure: CatalogosDbContext (schema "Catalogos") + CatalogoItemRepository + configuración EF + seeder + migración + DI
+
+Api: CatalogosController (5 endpoints) + CrearCatalogoItemRequest
+
+Fase 10 — Host final ⏳
+
+Activar todos los módulos en Program.cs (descomentar AddAuthApplication, AddAuthInfrastructure, AddCatalogosApplication, AddCatalogosInfrastructure, AddApplicationPart)
+
+Activar seeders en ApplicationSeederExtension.cs
+
+Fase 11 — Script rename.ps1 ⏳
+
+Reemplaza "CoreTemplate" por el nombre del nuevo sistema en namespaces, archivos, carpetas, .sln, .csproj
+
+Fase 12 — Tests ⏳
+
+SharedKernel.Tests: Result, PagedResult, ValueObject
+
+Auth.Tests: Usuario aggregate, LoginCommandHandler, RegistrarUsuarioCommandHandler
+
+Catalogos.Tests: CatalogoItem aggregate, CrearItemCommandHandler
+
+Fase 13 — README final ⏳
+
+Instrucciones completas: clonar, rename.ps1, configurar appsettings, migraciones, multi-tenant, 2FA, agregar módulos
+
+Instrucción
+Continúa la implementación desde la Fase 6 — Auth Application. Sigue las convenciones del proyecto, implementa todo completo (no a medias), verifica compilación con dotnet build después de cada fase, y actualiza docs/PLAN-IMPLEMENTACION.md marcando [x] lo completado.
+
+Copia ese prompt completo al inicio de un chat nuevo y podrás continuar exactamente desde donde estamos.

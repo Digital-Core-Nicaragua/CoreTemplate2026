@@ -1,0 +1,90 @@
+@startuml auth-flow
+
+title CoreTemplate — Flujo de Autenticación
+
+skinparam backgroundColor #FAFAFA
+
+actor Cliente
+participant "Auth.Api" as api
+participant "LoginHandler" as handler
+participant "UsuarioRepo" as repo
+participant "JwtService" as jwt
+database "DB" as db
+
+== Login Normal ==
+
+Cliente -> api: POST /api/auth/login\n{email, password}
+api -> handler: LoginCommand
+handler -> repo: GetByEmailAsync(email)
+repo -> db: SELECT usuario
+db --> repo: Usuario
+repo --> handler: Usuario
+
+alt Usuario no encontrado
+  handler --> api: Result.Failure("Credenciales inválidas")
+  api --> Cliente: 401
+end
+
+alt Cuenta bloqueada
+  handler --> api: Result.Failure("Cuenta bloqueada hasta X")
+  api --> Cliente: 401
+end
+
+alt Cuenta inactiva
+  handler --> api: Result.Failure("Cuenta inactiva")
+  api --> Cliente: 401
+end
+
+handler -> handler: BCrypt.Verify(password, hash)
+
+alt Contraseña incorrecta
+  handler -> repo: IncrementarIntentosFallidos()
+  handler --> api: Result.Failure("Credenciales inválidas")
+  api --> Cliente: 401
+end
+
+alt 2FA activo
+  handler -> jwt: GenerarTokenTemporal()
+  jwt --> handler: tokenTemporal
+  handler --> api: {requires2FA: true, tempToken}
+  api --> Cliente: 200 {requires2FA: true, tempToken}
+  
+  == Verificación 2FA ==
+  Cliente -> api: POST /api/auth/2fa/verify\n{tempToken, totpCode}
+  api -> handler: Verify2FACommand
+  handler -> handler: ValidarTOTP(secretKey, totpCode)
+  
+  alt Código inválido
+    handler --> api: Result.Failure("Código inválido")
+    api --> Cliente: 401
+  end
+end
+
+handler -> jwt: GenerarAccessToken(usuario)
+jwt --> handler: accessToken
+handler -> jwt: GenerarRefreshToken()
+jwt --> handler: refreshToken
+handler -> repo: GuardarRefreshToken()
+handler -> repo: RegistrarAuditoria(Login)
+handler --> api: Result.Success({accessToken, refreshToken})
+api --> Cliente: 200 {accessToken, refreshToken, usuario}
+
+== Refresh Token ==
+
+Cliente -> api: POST /api/auth/refresh\n{refreshToken}
+api -> handler: RefreshTokenCommand
+handler -> repo: GetRefreshToken(token)
+
+alt Token no encontrado / revocado / expirado
+  handler --> api: Result.Failure
+  api --> Cliente: 401
+end
+
+handler -> repo: RevocarRefreshToken(tokenAnterior)
+handler -> jwt: GenerarAccessToken(usuario)
+handler -> jwt: GenerarRefreshToken()
+handler -> repo: GuardarRefreshToken(nuevo)
+handler --> api: Result.Success({accessToken, refreshToken})
+api --> Cliente: 200 {accessToken, refreshToken}
+
+@enduml

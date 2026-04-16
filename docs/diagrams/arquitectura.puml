@@ -1,0 +1,56 @@
+@startuml arquitectura
+
+title CoreTemplate — Arquitectura de Capas
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam component {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+
+package "Host" {
+  [CoreTemplate.Api\nProgram.cs] as host
+}
+
+package "Modules / Auth" {
+  [Auth.Api\nControllers] as authApi
+  [Auth.Application\nHandlers / Commands / Queries] as authApp
+  [Auth.Domain\nAggregates / Events] as authDomain
+  [Auth.Infrastructure\nRepositories / DbContext] as authInfra
+}
+
+package "Modules / Catalogos" {
+  [Catalogos.Api] as catApi
+  [Catalogos.Application] as catApp
+  [Catalogos.Domain] as catDomain
+  [Catalogos.Infrastructure] as catInfra
+}
+
+package "BuildingBlocks" {
+  [SharedKernel\nResult / AggregateRoot / Entity] as sk
+  [Api.Common\nApiResponse / BaseController] as apiCommon
+  [Infrastructure\nBaseDbContext / BaseRepository] as infraBase
+}
+
+database "SQL Server\n/ PostgreSQL" as db
+
+host --> authApi
+host --> catApi
+authApi --> authApp
+catApi --> catApp
+authApp --> authDomain
+catApp --> catDomain
+authInfra --> authApp
+catInfra --> catApp
+authInfra --> infraBase
+catInfra --> infraBase
+authDomain --> sk
+catDomain --> sk
+authApi --> apiCommon
+catApi --> apiCommon
+infraBase --> db
+authInfra --> db
+catInfra --> db
+
+@enduml

@@ -1,0 +1,126 @@
+@startuml modelo-datos
+
+title CoreTemplate — Modelo de Datos (Auth)
+
+skinparam backgroundColor #FAFAFA
+skinparam class {
+  BackgroundColor #E8F4FD
+  BorderColor #2196F3
+}
+
+entity Usuario {
+  * Id : Guid <<PK>>
+  --
+  TenantId : Guid? <<FK>>
+  * Nombre : string(100)
+  * Email : string(200)
+  * PasswordHash : string(500)
+  * Estado : EstadoUsuario
+  * IntentosFallidos : int
+  BloqueadoHasta : DateTime?
+  * TwoFactorActivo : bool
+  TwoFactorSecretKey : string?
+  UltimoAcceso : DateTime?
+  * CreadoEn : DateTime
+  ModificadoEn : DateTime?
+}
+
+entity Rol {
+  * Id : Guid <<PK>>
+  --
+  TenantId : Guid?
+  * Nombre : string(100)
+  Descripcion : string(500)
+  * EsSistema : bool
+  * CreadoEn : DateTime
+}
+
+entity Permiso {
+  * Id : Guid <<PK>>
+  --
+  * Codigo : string(200)
+  * Nombre : string(200)
+  Descripcion : string(500)
+  * Modulo : string(100)
+}
+
+entity UsuarioRol {
+  * UsuarioId : Guid <<FK>>
+  * RolId : Guid <<FK>>
+  --
+  * AsignadoEn : DateTime
+}
+
+entity RolPermiso {
+  * RolId : Guid <<FK>>
+  * PermisoId : Guid <<FK>>
+}
+
+entity RefreshToken {
+  * Id : Guid <<PK>>
+  --
+  * UsuarioId : Guid <<FK>>
+  * Token : string(500)
+  * ExpiraEn : DateTime
+  RevocarEn : DateTime?
+  * EsRevocado : bool
+  * CreadoEn : DateTime
+  * CreadoDesdeIp : string(50)
+}
+
+entity TokenRestablecimiento {
+  * Id : Guid <<PK>>
+  --
+  * UsuarioId : Guid <<FK>>
+  * Token : string(500)
+  * ExpiraEn : DateTime
+  UsadoEn : DateTime?
+  * EsUsado : bool
+  * CreadoEn : DateTime
+}
+
+entity CodigoRecuperacion2FA {
+  * Id : Guid <<PK>>
+  --
+  * UsuarioId : Guid <<FK>>
+  * CodigoHash : string(500)
+  UsadoEn : DateTime?
+  * EsUsado : bool
+  * CreadoEn : DateTime
+}
+
+entity RegistroAuditoria {
+  * Id : Guid <<PK>>
+  --
+  TenantId : Guid?
+  UsuarioId : Guid?
+  * Email : string(200)
+  * Evento : EventoAuditoria
+  * Ip : string(50)
+  UserAgent : string(500)
+  Detalle : string?
+  * CreadoEn : DateTime
+}
+
+entity CatalogoItem {
+  * Id : Guid <<PK>>
+  --
+  TenantId : Guid?
+  * Codigo : string(50)
+  * Nombre : string(200)
+  Descripcion : string(500)
+  * EsActivo : bool
+  * CreadoEn : DateTime
+  ModificadoEn : DateTime?
+}
+
+Usuario ||--o{ UsuarioRol : tiene
+Rol ||--o{ UsuarioRol : asignado_a
+Rol ||--o{ RolPermiso : tiene
+Permiso ||--o{ RolPermiso : asignado_a
+Usuario ||--o{ RefreshToken : posee
+Usuario ||--o{ TokenRestablecimiento : solicita
+Usuario ||--o{ CodigoRecuperacion2FA : tiene
+Usuario ||--o{ RegistroAuditoria : genera
+
+@enduml

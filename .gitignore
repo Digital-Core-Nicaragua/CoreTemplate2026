@@ -1,0 +1,33 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.userprefs
+
+## Logs
+logs/
+*.log
+
+## Secrets / configuración local
+appsettings.Local.json
+appsettings.*.Local.json
+secrets.json
+
+## Migraciones generadas (opcional — comentar si quieres versionar migraciones)
+# */Migrations/
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Rider / JetBrains
+.idea/
+
+## VS Code
+.vscode/
+
+## NuGet
+*.nupkg
+.nuget/

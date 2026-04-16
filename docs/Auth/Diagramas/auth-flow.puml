@@ -1,0 +1,50 @@
+@startuml auth-flow
+title Flujo de Autenticación — Módulo Auth
+
+actor Usuario
+participant "AuthController" as AC
+participant "LoginCommandHandler" as LH
+participant "Usuario (Aggregate)" as UA
+participant "ISesionService" as SS
+participant "Sesion (Aggregate)" as SA
+participant "JwtService" as JS
+
+== Login Normal ==
+
+Usuario -> AC: POST /api/auth/login\n{email, password, canal}
+AC -> LH: Send(LoginCommand)
+LH -> UA: GetByEmail(email)
+LH -> UA: PuedeAutenticarse()
+LH -> UA: VerifyPassword(password)
+LH -> UA: ResetearIntentosFallidos()
+LH -> SS: VerificarYAplicarLimite(usuarioId, tipoUsuario)
+LH -> SA: Sesion.Crear(usuarioId, hash, canal, ip, ua)
+LH -> JS: GenerarAccessToken(usuario)
+AC --> Usuario: 200 {accessToken, refreshToken, usuario}
+
+== Login con 2FA ==
+
+Usuario -> AC: POST /api/auth/login
+AC -> LH: Send(LoginCommand)
+LH -> UA: TwoFactorActivo == true
+LH -> JS: GenerarTokenTemporal2FA(usuarioId)
+AC --> Usuario: 200 {requires2FA: true, tokenTemporal}
+
+Usuario -> AC: POST /api/auth/2fa/verificar\n{tokenTemporal, codigo}
+AC -> LH: Send(Verificar2FACommand)
+LH -> JS: ValidarTokenTemporal2FA(token)
+LH -> UA: ValidarCodigoTOTP(codigo)
+LH -> SA: Sesion.Crear(...)
+LH -> JS: GenerarAccessToken(usuario)
+AC --> Usuario: 200 {accessToken, refreshToken, usuario}
+
+== Logout ==
+
+Usuario -> AC: POST /api/auth/logout\n{refreshToken}
+AC -> LH: Send(LogoutCommand)
+LH -> SA: Sesion.Revocar()
+LH -> JS: ExtraerJti(accessToken)
+LH -> LH: ITokenBlacklistService.Agregar(jti, ttl)
+AC --> Usuario: 200 OK
+
+@enduml

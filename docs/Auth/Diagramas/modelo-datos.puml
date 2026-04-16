@@ -1,0 +1,149 @@
+@startuml modelo-datos-auth
+title Modelo de Datos — Módulo Auth (schema Auth)
+
+entity "Usuarios" as U {
+  * Id : GUID
+  --
+  TenantId : GUID?
+  Email : NVARCHAR(200)
+  Nombre : NVARCHAR(100)
+  PasswordHash : NVARCHAR(500)
+  TipoUsuario : NVARCHAR
+  Estado : NVARCHAR
+  IntentosFallidos : INT
+  BloqueadoHasta : DATETIME2?
+  TwoFactorActivo : BIT
+  TwoFactorSecretKey : NVARCHAR(500)?
+  UltimoAcceso : DATETIME2?
+  CreadoEn : DATETIME2
+}
+
+entity "Sesiones" as S {
+  * Id : GUID
+  --
+  UsuarioId : GUID
+  TenantId : GUID?
+  RefreshTokenHash : NVARCHAR(64)
+  Canal : NVARCHAR
+  Dispositivo : NVARCHAR(200)
+  Ip : NVARCHAR(50)
+  UserAgent : NVARCHAR(500)
+  UltimaActividad : DATETIME2
+  ExpiraEn : DATETIME2
+  CreadoEn : DATETIME2
+  EsActiva : BIT
+}
+
+entity "Roles" as R {
+  * Id : GUID
+  --
+  TenantId : GUID?
+  Nombre : NVARCHAR(100)
+  Descripcion : NVARCHAR
+  EsSistema : BIT
+  CreadoEn : DATETIME2
+}
+
+entity "Permisos" as P {
+  * Id : GUID
+  --
+  Codigo : NVARCHAR(200)
+  Nombre : NVARCHAR(200)
+  Descripcion : NVARCHAR(500)
+  Modulo : NVARCHAR(100)
+  CreadoEn : DATETIME2
+}
+
+entity "UsuarioRoles" as UR {
+  * Id : GUID
+  --
+  UsuarioId : GUID
+  RolId : GUID
+  AsignadoEn : DATETIME2
+}
+
+entity "RolPermisos" as RP {
+  * Id : GUID
+  --
+  RolId : GUID
+  PermisoId : GUID
+}
+
+entity "Sucursales" as SUC {
+  * Id : GUID
+  --
+  TenantId : GUID?
+  Codigo : NVARCHAR(20)
+  Nombre : NVARCHAR(100)
+  EsActiva : BIT
+  CreadoEn : DATETIME2
+}
+
+entity "UsuarioSucursales" as US {
+  * Id : GUID
+  --
+  UsuarioId : GUID
+  SucursalId : GUID
+  EsPrincipal : BIT
+  AsignadoEn : DATETIME2
+}
+
+entity "AsignacionesRol" as AR {
+  * Id : GUID
+  --
+  UsuarioId : GUID
+  SucursalId : GUID
+  RolId : GUID
+  AsignadoEn : DATETIME2
+}
+
+entity "Acciones" as AC {
+  * Id : GUID
+  --
+  Codigo : NVARCHAR(100)
+  Nombre : NVARCHAR(100)
+  Modulo : NVARCHAR(50)
+  Descripcion : NVARCHAR(500)
+  EsActiva : BIT
+  CreadoEn : DATETIME2
+}
+
+entity "ConfiguracionesTenant" as CT {
+  * Id : GUID
+  --
+  TenantId : GUID
+  MaxSesionesSimultaneas : INT?
+  ModificadoEn : DATETIME2
+}
+
+entity "RegistrosAuditoria" as RA {
+  * Id : GUID
+  --
+  TenantId : GUID?
+  UsuarioId : GUID?
+  Email : NVARCHAR(200)
+  Evento : NVARCHAR
+  Ip : NVARCHAR(50)
+  UserAgent : NVARCHAR(500)
+  Detalle : NVARCHAR?
+  CreadoEn : DATETIME2
+}
+
+U ||--o{ UR : "tiene"
+R ||--o{ UR : "asignado a"
+R ||--o{ RP : "tiene"
+P ||--o{ RP : "asignado a"
+U ||--o{ S : "tiene"
+U ||--o{ US : "asignado a"
+SUC ||--o{ US : "tiene"
+U ||--o{ AR : "tiene"
+SUC ||--o{ AR : "en"
+R ||--o{ AR : "asignado"
+
+note bottom of SUC : Solo si EnableBranches = true
+note bottom of US : Solo si EnableBranches = true
+note bottom of AR : Solo si EnableBranches = true
+note bottom of AC : Solo si UseActionCatalog = true
+note bottom of CT : Solo si EnableSessionLimitsPerTenant = true
+
+@enduml

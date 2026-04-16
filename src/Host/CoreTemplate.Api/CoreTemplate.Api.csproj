@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.Console" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\CoreTemplate.SharedKernel\CoreTemplate.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\CoreTemplate.Api.Common\CoreTemplate.Api.Common.csproj" />
+    <ProjectReference Include="..\..\BuildingBlocks\CoreTemplate.Infrastructure\CoreTemplate.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Auth\CoreTemplate.Modules.Auth.Infrastructure\CoreTemplate.Modules.Auth.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Auth\CoreTemplate.Modules.Auth.Api\CoreTemplate.Modules.Auth.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Catalogos\CoreTemplate.Modules.Catalogos.Infrastructure\CoreTemplate.Modules.Catalogos.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Catalogos\CoreTemplate.Modules.Catalogos.Api\CoreTemplate.Modules.Catalogos.Api.csproj" />
+  </ItemGroup>
+
+</Project>
