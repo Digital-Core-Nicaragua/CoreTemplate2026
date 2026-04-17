@@ -35,7 +35,7 @@ public sealed class Rol : AggregateRoot<Guid>
     private readonly List<RolPermiso> _permisos = [];
 
     /// <summary>Permisos asignados al rol.</summary>
-    public IReadOnlyList<RolPermiso> Permisos => _permisos.AsReadOnly();
+    public IReadOnlyList<RolPermiso> Permisos => _permisos;
 
     private Rol() { }
 

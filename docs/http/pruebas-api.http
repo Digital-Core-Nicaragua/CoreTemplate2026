@@ -1,0 +1,447 @@
+# CoreTemplate — Pruebas de API
+# Usar con la extensión REST Client de VS Code
+# Instalar: https://marketplace.visualstudio.com/items?itemName=humao.rest-client
+#
+# INSTRUCCIONES:
+# 1. Ejecutar la API: cd src/Host/CoreTemplate.Api && dotnet run
+# 2. Abrir este archivo en VS Code
+# 3. Hacer clic en "Send Request" sobre cada request
+# 4. Primero ejecutar LOGIN y copiar el accessToken en @token
+#
+# BASE URL: http://localhost:5000
+# SWAGGER:  http://localhost:5000/swagger
+#
+# ENUMS:
+#   CanalAcceso:  1=Web | 2=Mobile | 3=Api | 4=Desktop
+#   TipoUsuario:  1=Humano | 2=Sistema | 3=Integracion
+#   EstadoUsuario: Pendiente | Activo | Inactivo | Bloqueado
+
+@baseUrl = http://localhost:5000
+@token = PEGAR_ACCESS_TOKEN_AQUI
+@refreshToken = PEGAR_REFRESH_TOKEN_AQUI
+# @tenantId = PEGAR_TENANT_ID_AQUI  ← descomentar si IsMultiTenant = true
+
+###############################################################################
+# 1. AUTENTICACIÓN
+###############################################################################
+
+### 1.1 Login (usuario admin del seeder)
+# Ejecutar primero — copiar accessToken y refreshToken en las variables de arriba
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@coretemplate.com",
+  "password": "Admin@1234!",
+  "canal": 1,
+  "dispositivo": "REST Client"
+}
+
+---
+
+### 1.2 Registrar nuevo usuario
+POST {{baseUrl}}/api/auth/registro
+Content-Type: application/json
+
+{
+  "email": "nuevo@test.com",
+  "nombre": "Usuario Prueba",
+  "password": "Test@1234!",
+  "confirmPassword": "Test@1234!",
+  "tipoUsuario": 1
+}
+
+---
+
+### 1.3 Renovar Access Token
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+---
+
+### 1.4 Logout
+POST {{baseUrl}}/api/auth/logout
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+---
+
+### 1.5 Solicitar restablecimiento de contraseña
+POST {{baseUrl}}/api/auth/solicitar-restablecimiento
+Content-Type: application/json
+
+{
+  "email": "admin@coretemplate.com"
+}
+
+---
+
+### 1.6 Activar 2FA (requiere estar autenticado)
+POST {{baseUrl}}/api/auth/2fa/activar
+Authorization: Bearer {{token}}
+
+---
+
+### 1.7 Confirmar activación 2FA (usar código del QR)
+POST {{baseUrl}}/api/auth/2fa/confirmar
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "codigo": "123456"
+}
+
+---
+
+### 1.8 Desactivar 2FA
+POST {{baseUrl}}/api/auth/2fa/desactivar
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "codigo": "123456"
+}
+
+---
+
+###############################################################################
+# 2. PERFIL
+###############################################################################
+
+### 2.1 Ver mi perfil
+GET {{baseUrl}}/api/perfil
+Authorization: Bearer {{token}}
+
+---
+
+### 2.2 Cambiar contraseña
+PUT {{baseUrl}}/api/perfil/cambiar-password
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "passwordActual": "Admin@1234!",
+  "nuevoPassword": "Admin@5678!",
+  "confirmPassword": "Admin@5678!"
+}
+
+---
+
+### 2.3 Ver mis sesiones activas
+GET {{baseUrl}}/api/perfil/sesiones
+Authorization: Bearer {{token}}
+
+---
+
+### 2.4 Cerrar sesión específica (reemplazar {id} con un ID real)
+DELETE {{baseUrl}}/api/perfil/sesiones/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{token}}
+
+---
+
+### 2.5 Cerrar todas las sesiones excepto la actual (reemplazar {id})
+DELETE {{baseUrl}}/api/perfil/sesiones/otras?sesionActualId=00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{token}}
+
+---
+
+###############################################################################
+# 3. USUARIOS (requiere permiso Usuarios.Ver / Usuarios.Gestionar)
+###############################################################################
+
+### 3.1 Listar usuarios (paginado)
+GET {{baseUrl}}/api/usuarios?pagina=1&tamanoPagina=10
+Authorization: Bearer {{token}}
+
+---
+
+### 3.2 Listar usuarios filtrado por estado
+GET {{baseUrl}}/api/usuarios?pagina=1&tamanoPagina=10&estado=Activo
+Authorization: Bearer {{token}}
+
+---
+
+### 3.3 Obtener usuario por ID (reemplazar {id})
+GET {{baseUrl}}/api/usuarios/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{token}}
+
+---
+
+### 3.4 Activar usuario (reemplazar {id})
+PUT {{baseUrl}}/api/usuarios/00000000-0000-0000-0000-000000000000/activar
+Authorization: Bearer {{token}}
+
+---
+
+### 3.5 Desactivar usuario (reemplazar {id})
+PUT {{baseUrl}}/api/usuarios/00000000-0000-0000-0000-000000000000/desactivar
+Authorization: Bearer {{token}}
+
+---
+
+### 3.6 Desbloquear usuario (reemplazar {id})
+PUT {{baseUrl}}/api/usuarios/00000000-0000-0000-0000-000000000000/desbloquear
+Authorization: Bearer {{token}}
+
+---
+
+### 3.7 Asignar rol a usuario (reemplazar {id} y {rolId})
+POST {{baseUrl}}/api/usuarios/00000000-0000-0000-0000-000000000000/roles
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "rolId": "00000000-0000-0000-0000-000000000000"
+}
+
+---
+
+### 3.8 Quitar rol de usuario (reemplazar {id} y {rolId})
+DELETE {{baseUrl}}/api/usuarios/00000000-0000-0000-0000-000000000000/roles/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{token}}
+
+---
+
+### 3.9 Ver sesiones de un usuario (admin)
+GET {{baseUrl}}/api/usuarios/00000000-0000-0000-0000-000000000000/sesiones
+Authorization: Bearer {{token}}
+
+---
+
+### 3.10 Cerrar todas las sesiones de un usuario (admin)
+DELETE {{baseUrl}}/api/usuarios/00000000-0000-0000-0000-000000000000/sesiones
+Authorization: Bearer {{token}}
+
+---
+
+###############################################################################
+# 4. ROLES
+###############################################################################
+
+### 4.1 Listar roles
+GET {{baseUrl}}/api/roles
+Authorization: Bearer {{token}}
+
+---
+
+### 4.2 Obtener rol por ID (reemplazar {id})
+GET {{baseUrl}}/api/roles/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{token}}
+
+---
+
+### 4.3 Crear rol
+POST {{baseUrl}}/api/roles
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nombre": "Operativo",
+  "descripcion": "Rol operativo básico",
+  "permisoIds": []
+}
+
+---
+
+### 4.4 Actualizar rol (reemplazar {id})
+PUT {{baseUrl}}/api/roles/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nombre": "Operativo Actualizado",
+  "descripcion": "Descripción actualizada",
+  "permisoIds": []
+}
+
+---
+
+### 4.5 Eliminar rol (reemplazar {id})
+DELETE {{baseUrl}}/api/roles/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{token}}
+
+---
+
+###############################################################################
+# 5. CATÁLOGOS
+###############################################################################
+
+### 5.1 Listar ítems de catálogo
+GET {{baseUrl}}/api/catalogos?pagina=1&tamanoPagina=10
+Authorization: Bearer {{token}}
+
+---
+
+### 5.2 Listar con búsqueda
+GET {{baseUrl}}/api/catalogos?pagina=1&tamanoPagina=10&busqueda=ejemplo
+Authorization: Bearer {{token}}
+
+---
+
+### 5.3 Obtener ítem por ID (reemplazar {id})
+GET {{baseUrl}}/api/catalogos/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{token}}
+
+---
+
+### 5.4 Crear ítem de catálogo
+POST {{baseUrl}}/api/catalogos
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nombre": "Nuevo Ítem",
+  "descripcion": "Descripción del ítem"
+}
+
+---
+
+### 5.5 Activar ítem (reemplazar {id})
+PUT {{baseUrl}}/api/catalogos/00000000-0000-0000-0000-000000000000/activar
+Authorization: Bearer {{token}}
+
+---
+
+### 5.6 Desactivar ítem (reemplazar {id})
+PUT {{baseUrl}}/api/catalogos/00000000-0000-0000-0000-000000000000/desactivar
+Authorization: Bearer {{token}}
+
+---
+
+###############################################################################
+# 6. TENANTS (requiere IsMultiTenant = true)
+###############################################################################
+
+### 6.1 Ver configuración de tenant (reemplazar {tenantId})
+GET {{baseUrl}}/api/tenants/00000000-0000-0000-0000-000000000000/configuracion
+Authorization: Bearer {{token}}
+
+---
+
+### 6.2 Configurar límite de sesiones por tenant
+PUT {{baseUrl}}/api/tenants/00000000-0000-0000-0000-000000000000/limite-sesiones
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "maxSesionesSimultaneas": 3
+}
+
+---
+
+###############################################################################
+# 7. SUCURSALES (requiere EnableBranches = true en appsettings)
+###############################################################################
+
+### 7.1 Listar sucursales
+GET {{baseUrl}}/api/sucursales
+Authorization: Bearer {{token}}
+
+---
+
+### 7.2 Crear sucursal
+POST {{baseUrl}}/api/sucursales
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "codigo": "SUC001",
+  "nombre": "Sucursal Central"
+}
+
+---
+
+### 7.3 Ver sucursales de un usuario (reemplazar {usuarioId})
+GET {{baseUrl}}/api/sucursales/usuarios/00000000-0000-0000-0000-000000000000
+Authorization: Bearer {{token}}
+
+---
+
+### 7.4 Asignar sucursal a usuario
+POST {{baseUrl}}/api/sucursales/usuarios/00000000-0000-0000-0000-000000000000
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "sucursalId": "00000000-0000-0000-0000-000000000000"
+}
+
+---
+
+### 7.5 Cambiar sucursal activa (perfil propio)
+PUT {{baseUrl}}/api/perfil/sucursal-activa
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "sucursalId": "00000000-0000-0000-0000-000000000000"
+}
+
+---
+
+###############################################################################
+# 8. ACCIONES (requiere UseActionCatalog = true en appsettings)
+###############################################################################
+
+### 8.1 Listar acciones
+GET {{baseUrl}}/api/acciones
+Authorization: Bearer {{token}}
+
+---
+
+### 8.2 Listar acciones por módulo
+GET {{baseUrl}}/api/acciones?modulo=Usuarios
+Authorization: Bearer {{token}}
+
+---
+
+### 8.3 Crear acción
+POST {{baseUrl}}/api/acciones
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "codigo": "Ventas.Facturas.Crear",
+  "nombre": "Crear Factura",
+  "modulo": "Ventas",
+  "descripcion": "Permite crear facturas de venta"
+}
+
+---
+
+### 8.4 Desactivar acción (reemplazar {id})
+PUT {{baseUrl}}/api/acciones/00000000-0000-0000-0000-000000000000/desactivar
+Authorization: Bearer {{token}}
+
+---
+
+### 8.5 Activar acción (reemplazar {id})
+PUT {{baseUrl}}/api/acciones/00000000-0000-0000-0000-000000000000/activar
+Authorization: Bearer {{token}}
+
+---
+
+###############################################################################
+# FLUJO COMPLETO DE PRUEBA SUGERIDO
+###############################################################################
+#
+# 1. POST /api/auth/login          → Obtener tokens
+# 2. GET  /api/perfil              → Ver perfil del admin
+# 3. GET  /api/roles               → Ver roles disponibles (SuperAdmin, Admin, User)
+# 4. GET  /api/usuarios            → Listar usuarios
+# 5. POST /api/auth/registro       → Crear nuevo usuario
+# 6. PUT  /api/usuarios/{id}/activar → Activar el usuario creado
+# 7. POST /api/usuarios/{id}/roles → Asignar rol al usuario
+# 8. GET  /api/perfil/sesiones     → Ver sesiones activas
+# 9. GET  /api/catalogos           → Ver ítems del catálogo
+# 10. POST /api/auth/logout        → Cerrar sesión
+#
+###############################################################################

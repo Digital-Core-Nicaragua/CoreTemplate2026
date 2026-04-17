@@ -1,4 +1,4 @@
-using CoreTemplate.Infrastructure.Services;
+using CoreTemplate.SharedKernel.Abstractions;
 using CoreTemplate.Infrastructure.Settings;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -66,6 +66,17 @@ public sealed class TenantMiddleware(
         }
 
         // Validar que el tenant fue resuelto
+        // Excepción: usuarios con TenantId null en el JWT son SuperAdmin (acceso global)
+        var tenantIdClaim = context.User?.FindFirst("tenant_id")?.Value;
+        var esSuperAdmin = context.User?.Identity?.IsAuthenticated == true
+            && string.IsNullOrEmpty(tenantIdClaim);
+
+        if (esSuperAdmin)
+        {
+            await _next(context);
+            return;
+        }
+
         if (!currentTenant.TenantResuelto)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;

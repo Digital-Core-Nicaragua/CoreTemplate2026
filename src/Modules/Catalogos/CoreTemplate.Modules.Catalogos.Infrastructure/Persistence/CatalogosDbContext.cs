@@ -1,5 +1,5 @@
 using CoreTemplate.Infrastructure.Persistence;
-using CoreTemplate.Infrastructure.Services;
+using CoreTemplate.SharedKernel.Abstractions;
 using CoreTemplate.Infrastructure.Settings;
 using CoreTemplate.Modules.Catalogos.Domain.Aggregates;
 using Microsoft.EntityFrameworkCore;

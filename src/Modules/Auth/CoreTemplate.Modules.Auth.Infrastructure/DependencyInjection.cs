@@ -1,3 +1,4 @@
+using CoreTemplate.Modules.Auth.Application;
 using CoreTemplate.Modules.Auth.Application.Abstractions;
 using CoreTemplate.Modules.Auth.Domain.Repositories;
 using CoreTemplate.Modules.Auth.Infrastructure.Persistence;
@@ -54,18 +55,12 @@ public static class DependencyInjection
         services.AddScoped<IRegistroAuditoriaRepository, RegistroAuditoriaRepository>();
         services.AddScoped<IConfiguracionTenantRepository, ConfiguracionTenantRepository>();
 
-        // Sucursales (solo si EnableBranches = true)
-        if (configuration.GetValue<bool>("OrganizationSettings:EnableBranches"))
-        {
-            services.AddScoped<ISucursalRepository, SucursalRepository>();
-            services.AddScoped<IAsignacionRolRepository, AsignacionRolRepository>();
-        }
-
-        // Catálogo de acciones (solo si UseActionCatalog = true)
-        if (configuration.GetValue<bool>("AuthSettings:UseActionCatalog"))
-        {
-            services.AddScoped<IAccionRepository, AccionRepository>();
-        }
+        // Repositorios opcionales — siempre registrados para que MediatR pueda resolver
+        // los handlers. El flag EnableBranches / UseActionCatalog controla el comportamiento
+        // en runtime dentro de cada handler.
+        services.AddScoped<ISucursalRepository, SucursalRepository>();
+        services.AddScoped<IAsignacionRolRepository, AsignacionRolRepository>();
+        services.AddScoped<IAccionRepository, AccionRepository>();
 
         // Servicios
         services.AddScoped<IJwtService, JwtService>();
@@ -117,6 +112,19 @@ public static class DependencyInjection
 
         services.AddAuthorization();
 
+        return services;
+    }
+
+    /// <summary>
+    /// Registra el modulo Auth completo: Application + Infrastructure.
+    /// Usar este metodo desde Program.cs.
+    /// </summary>
+    public static IServiceCollection AddAuthModule(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddAuthApplication(configuration);
+        services.AddAuthInfrastructure(configuration);
         return services;
     }
 }

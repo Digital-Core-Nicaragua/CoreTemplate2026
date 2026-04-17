@@ -16,7 +16,11 @@ public static class AuthDataSeeder
     public static async Task SeedAsync(IServiceProvider services)
     {
         var db = services.GetRequiredService<AuthDbContext>();
-        await db.Database.MigrateAsync();
+
+        // Solo migrar si hay migraciones pendientes
+        var pendientes = await db.Database.GetPendingMigrationsAsync();
+        if (pendientes.Any())
+            await db.Database.MigrateAsync();
 
         await SeedPermisosAsync(db);
         await SeedRolesAsync(db);

@@ -20,6 +20,8 @@ public sealed class AuthSettings
     public AccionAlLlegarLimiteSesiones AccionAlLlegarLimiteSesiones { get; init; } = AccionAlLlegarLimiteSesiones.CerrarMasAntigua;
     public bool EnableTokenBlacklist { get; init; } = true;
     public bool UseActionCatalog { get; init; } = false;
+    /// <summary>Work factor de BCrypt. Default 12 (producción). Usar 4 en desarrollo para mayor velocidad.</summary>
+    public int BcryptWorkFactor { get; init; } = 12;
 }
 
 /// <summary>

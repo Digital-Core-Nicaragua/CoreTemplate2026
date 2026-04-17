@@ -1,7 +1,7 @@
 using CoreTemplate.Modules.Auth.Application.Abstractions;
 using CoreTemplate.Modules.Auth.Application.Constants;
 using CoreTemplate.Modules.Auth.Domain.Repositories;
-using CoreTemplate.Infrastructure.Services;
+using CoreTemplate.SharedKernel.Abstractions;
 using CoreTemplate.SharedKernel;
 using MediatR;
 using Microsoft.Extensions.Options;

@@ -1,14 +1,15 @@
 using CoreTemplate.Api.Common;
 using CoreTemplate.Api.Extensions;
 using CoreTemplate.Infrastructure;
-using CoreTemplate.Modules.Auth.Application;
+using CoreTemplate.Logging.Configuration;
+using CoreTemplate.Monitoring.Configuration;
 using CoreTemplate.Modules.Auth.Infrastructure;
 using CoreTemplate.Modules.Auth.Infrastructure.Middleware;
-using CoreTemplate.Modules.Catalogos.Application;
 using CoreTemplate.Modules.Catalogos.Infrastructure;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
-// ─── Serilog bootstrap logger ────────────────────────────────────────────────
+// Serilog bootstrap logger
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateBootstrapLogger();
@@ -19,39 +20,62 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
-    // ─── Serilog ─────────────────────────────────────────────────────────────
+    // Serilog
     builder.Host.UseSerilog((ctx, lc) => lc
         .ReadFrom.Configuration(ctx.Configuration)
-        .WriteTo.Console()
-        .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day));
+        .WriteTo.Console());
 
-    // ─── Controllers + módulos ────────────────────────────────────────────────
+    // Controllers + modulos
     builder.Services.AddControllers()
         .AddApplicationPart(typeof(CoreTemplate.Modules.Auth.Api.Controllers.AuthController).Assembly)
         .AddApplicationPart(typeof(CoreTemplate.Modules.Catalogos.Api.Controllers.CatalogosController).Assembly);
 
-    // ─── Infraestructura base (ICurrentUser, ICurrentTenant, Settings) ────────
+    // Infraestructura base (incluye Logging, Auditing, Monitoring)
     builder.Services.AddInfrastructureBase(builder.Configuration);
 
-    // ─── Manejo global de excepciones ─────────────────────────────────────────
+    // Manejo global de excepciones
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
     builder.Services.AddProblemDetails();
 
-    // ─── Módulo Auth ──────────────────────────────────────────────────────────
-    builder.Services.AddAuthApplication(builder.Configuration);
-    builder.Services.AddAuthInfrastructure(builder.Configuration);
+    // Modulo Auth
+    builder.Services.AddAuthModule(builder.Configuration);
 
-    // ─── Módulo Catálogos ─────────────────────────────────────────────────────
-    builder.Services.AddCatalogosApplication(builder.Configuration);
-    builder.Services.AddCatalogosInfrastructure(builder.Configuration);
+    // Modulo Catalogos
+    builder.Services.AddCatalogosModule(builder.Configuration);
 
-    // ─── Swagger con soporte JWT ──────────────────────────────────────────────
+    // Swagger con soporte JWT
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "CoreTemplate API", Version = "v1" });
+
+        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Ingresa el token JWT obtenido del login. Ejemplo: eyJhbGci..."
+        });
+
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
+    });
 
     var app = builder.Build();
-
-    // ─── Pipeline HTTP ────────────────────────────────────────────────────────
 
     app.UseExceptionHandler();
 
@@ -73,6 +97,8 @@ try
     }
 
     app.UseSerilogRequestLogging();
+    app.UseCorrelationMiddleware();
+    app.UseHealthCheckEndpoints(builder.Configuration);
     app.UseHttpsRedirection();
     app.UseAuthentication();
 
@@ -88,7 +114,7 @@ try
 }
 catch (Exception ex)
 {
-    Log.Fatal(ex, "La aplicación falló al iniciar.");
+    Log.Fatal(ex, "La aplicacion fallo al iniciar.");
 }
 finally
 {

@@ -65,16 +65,16 @@ public sealed class Usuario : AggregateRoot<Guid>
     private readonly List<UsuarioSucursal> _sucursales = [];
 
     /// <summary>Roles asignados al usuario.</summary>
-    public IReadOnlyList<UsuarioRol> Roles => _roles.AsReadOnly();
+    public IReadOnlyList<UsuarioRol> Roles => _roles;
 
     /// <summary>Tokens de restablecimiento de contraseña.</summary>
-    public IReadOnlyList<TokenRestablecimiento> TokensRestablecimiento => _tokensRestablecimiento.AsReadOnly();
+    public IReadOnlyList<TokenRestablecimiento> TokensRestablecimiento => _tokensRestablecimiento;
 
     /// <summary>Códigos de recuperación de 2FA.</summary>
-    public IReadOnlyList<CodigoRecuperacion2FA> CodigosRecuperacion => _codigosRecuperacion.AsReadOnly();
+    public IReadOnlyList<CodigoRecuperacion2FA> CodigosRecuperacion => _codigosRecuperacion;
 
     /// <summary>Sucursales asignadas al usuario (solo cuando EnableBranches = true).</summary>
-    public IReadOnlyList<UsuarioSucursal> Sucursales => _sucursales.AsReadOnly();
+    public IReadOnlyList<UsuarioSucursal> Sucursales => _sucursales;
 
     private Usuario() { }
 

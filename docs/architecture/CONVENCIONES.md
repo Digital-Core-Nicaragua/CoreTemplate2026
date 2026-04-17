@@ -24,6 +24,10 @@
 | Request contract | PascalCase + Request | `LoginRequest`, `CrearUsuarioRequest` |
 | Event | PascalCase + Event | `UsuarioRegistradoEvent` |
 | Value Object | PascalCase descriptivo | `Email`, `PasswordHash` |
+| Health Check | PascalCase + HealthCheck | `DatabaseHealthCheck`, `RedisHealthCheck` |
+| Interceptor EF | PascalCase + Interceptor | `AuditSaveChangesInterceptor` |
+| Middleware | PascalCase + Middleware | `CorrelationMiddleware` |
+| Extension DI | DependencyInjection | Siempre `DependencyInjection.cs` en cada proyecto |
 
 ### Métodos
 | Tipo | Convención | Ejemplo |
@@ -95,6 +99,7 @@ Controllers/
 Contracts/
   LoginRequest.cs
   CrearUsuarioRequest.cs
+DependencyInjection.cs       ← NUEVO — AddAuthModule() encapsula todo el módulo
 ModuleName.Api.csproj
 ```
 
@@ -149,6 +154,65 @@ var usuario = new Usuario { Email = email, ... };
 Task<Usuario?> GetByIdAsync(Guid id, CancellationToken ct = default);
 ```
 
+### Nunca DateTime.UtcNow en el dominio
+```csharp
+// Correcto — recibir el tiempo como parámetro
+public static Result<Usuario> Crear(Email email, string nombre, PasswordHash hash, DateTime ahora)
+{
+    var usuario = new Usuario { CreadoEn = ahora };
+    ...
+}
+
+// Incorrecto — dependencia oculta en el dominio
+var usuario = new Usuario { CreadoEn = DateTime.UtcNow };
+```
+
+### Registro de módulo encapsulado en DependencyInjection.cs de Api
+```csharp
+// src/Modules/Auth/CoreTemplate.Modules.Auth.Api/DependencyInjection.cs
+public static class DependencyInjection
+{
+    public static IServiceCollection AddAuthModule(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddAuthApplication(configuration);
+        services.AddAuthInfrastructure(configuration);
+        return services;
+    }
+}
+
+// En Program.cs:
+builder.Services.AddAuthModule(builder.Configuration);
+```
+
+### Logging con IAppLogger
+```csharp
+// Correcto en handlers de Application
+internal sealed class LoginCommandHandler(
+    IAppLogger _logger, ...) : IRequestHandler<LoginCommand, Result<LoginResponseDto>>
+{
+    public async Task<Result<LoginResponseDto>> Handle(LoginCommand cmd, CancellationToken ct)
+    {
+        _logger.Info("Intento de login para {Email}", cmd.Email);
+        ...
+    }
+}
+```
+
+### Auditoría explícita en acciones sensibles
+```csharp
+// Para acciones que no son CRUD de entidades (login, logout, etc.)
+// el handler llama explícitamente a IAuditService
+await _auditService.LogAsync(new AuditLog
+{
+    NombreEntidad = "Sesion",
+    EntidadId = sesion.Id.ToString(),
+    Accion = AuditActionType.Login,
+    OcurridoEn = _dateTimeProvider.UtcNow
+}, ct);
+```
+
 ---
 
 ## 4. Reglas de código
@@ -160,6 +224,9 @@ Task<Usuario?> GetByIdAsync(Guid id, CancellationToken ct = default);
 - **No excepciones para control de flujo** — usar `Result<T>`
 - **No `var` en tipos no obvios** — usar el tipo explícito
 - **XML docs** en todas las clases y métodos públicos de SharedKernel y Api.Common
+- **No `DateTime.UtcNow` en Domain** — recibir el tiempo como parámetro desde Application
+- **No `ILogger<T>` en Application** — usar `IAppLogger` de `CoreTemplate.Logging`
+- **No referencia a `CoreTemplate.Infrastructure` desde Application** — usar `CoreTemplate.Abstractions`
 
 ---
 

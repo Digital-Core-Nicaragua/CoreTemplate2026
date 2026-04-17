@@ -13,12 +13,12 @@ internal sealed class RolRepository(AuthDbContext _db) : IRolRepository
 {
     public Task<Rol?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
         _db.Roles
-            .Include("_permisos")
+            .Include(r => r.Permisos)
             .FirstOrDefaultAsync(r => r.Id == id, ct);
 
     public Task<List<Rol>> GetAllAsync(Guid? tenantId = null, CancellationToken ct = default) =>
         _db.Roles
-            .Include("_permisos")
+            .Include(r => r.Permisos)
             .OrderBy(r => r.Nombre)
             .ToListAsync(ct);
 

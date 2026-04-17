@@ -1,8 +1,8 @@
-namespace CoreTemplate.Infrastructure.Services;
+namespace CoreTemplate.SharedKernel.Abstractions;
 
 /// <summary>
 /// Contrato para obtener la sucursal activa del usuario autenticado.
-/// Solo relevante cuando OrganizationSettings:EnableBranches = true.
+/// Solo relevante cuando <c>OrganizationSettings:EnableBranches = true</c>.
 /// </summary>
 public interface ICurrentBranch
 {

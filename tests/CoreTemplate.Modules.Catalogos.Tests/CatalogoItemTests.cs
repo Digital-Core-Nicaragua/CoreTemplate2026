@@ -2,7 +2,7 @@ using CoreTemplate.Modules.Catalogos.Application.Commands;
 using CoreTemplate.Modules.Catalogos.Domain.Aggregates;
 using CoreTemplate.Modules.Catalogos.Domain.Events;
 using CoreTemplate.Modules.Catalogos.Domain.Repositories;
-using CoreTemplate.Infrastructure.Services;
+using CoreTemplate.SharedKernel.Abstractions;
 using FluentAssertions;
 using NSubstitute;
 

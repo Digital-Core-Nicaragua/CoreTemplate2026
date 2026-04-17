@@ -1,32 +1,39 @@
-using CoreTemplate.Infrastructure.Services;
+using CoreTemplate.SharedKernel.Abstractions;
 using CoreTemplate.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace CoreTemplate.Modules.Auth.Infrastructure.Persistence;
 
 /// <summary>
 /// Factory para crear <see cref="AuthDbContext"/> desde la CLI de EF Core.
-/// Permite ejecutar <c>dotnet ef migrations add</c> y <c>dotnet ef database update</c>
-/// sin necesidad de levantar la aplicación completa.
-/// <para>
-/// Uso:
-/// <code>
-/// dotnet ef migrations add InitialCreate_Auth --project src/Modules/Auth/CoreTemplate.Modules.Auth.Infrastructure --startup-project src/Host/CoreTemplate.Api
-/// </code>
-/// </para>
+/// Lee la connection string desde appsettings.json del proyecto Host.
 /// </summary>
 public sealed class AuthDbContextFactory : IDesignTimeDbContextFactory<AuthDbContext>
 {
     public AuthDbContext CreateDbContext(string[] args)
     {
+        var configuration = BuildConfiguration();
+
+        var connectionString = configuration["DatabaseSettings:ConnectionString"]
+            ?? throw new InvalidOperationException("No se encontró DatabaseSettings:ConnectionString.");
+
+        var provider = configuration["DatabaseSettings:Provider"] ?? "SqlServer";
+
         var optionsBuilder = new DbContextOptionsBuilder<AuthDbContext>();
 
-        // Usar SQL Server por defecto para migraciones en desarrollo
-        optionsBuilder.UseSqlServer(
-            "Server=localhost;Database=CoreTemplateDb;User Id=sa;Password=YourPassword;TrustServerCertificate=True;",
-            sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "Auth"));
+        if (provider.Equals("PostgreSQL", StringComparison.OrdinalIgnoreCase))
+        {
+            optionsBuilder.UseNpgsql(connectionString,
+                sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "Auth"));
+        }
+        else
+        {
+            optionsBuilder.UseSqlServer(connectionString,
+                sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", "Auth"));
+        }
 
         var tenantSettings = Options.Create(new TenantSettings { IsMultiTenant = false });
         var currentTenant = new NullCurrentTenant();
@@ -34,9 +41,37 @@ public sealed class AuthDbContextFactory : IDesignTimeDbContextFactory<AuthDbCon
         return new AuthDbContext(optionsBuilder.Options, currentTenant, tenantSettings);
     }
 
-    /// <summary>
-    /// Implementación nula de ICurrentTenant para uso en design-time (migraciones CLI).
-    /// </summary>
+    private static IConfiguration BuildConfiguration()
+    {
+        // EF Tools ejecuta desde la raíz de la solución
+        // Busca el appsettings en src/Host/CoreTemplate.Api
+        var basePath = FindAppsettingsPath();
+
+        return new ConfigurationBuilder()
+            .SetBasePath(basePath)
+            .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile("appsettings.Development.json", optional: true)
+            .Build();
+    }
+
+    private static string FindAppsettingsPath()
+    {
+        // Candidatos en orden de prioridad
+        var candidates = new[]
+        {
+            Path.Combine(Directory.GetCurrentDirectory(), "src", "Host", "CoreTemplate.Api"),
+            Directory.GetCurrentDirectory(),
+        };
+
+        foreach (var path in candidates)
+        {
+            if (File.Exists(Path.Combine(path, "appsettings.json")))
+                return path;
+        }
+
+        return Directory.GetCurrentDirectory();
+    }
+
     private sealed class NullCurrentTenant : ICurrentTenant
     {
         public Guid? TenantId => null;

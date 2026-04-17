@@ -32,10 +32,14 @@ CoreTemplate implementa **Clean Architecture** combinada con **Domain-Driven Des
 
 ### Reglas de dependencia
 - `Domain` → solo `SharedKernel`
-- `Application` → `Domain` + `SharedKernel`
-- `Infrastructure` → `Application` + `Domain` + `SharedKernel`
-- `Api` → `Application` + `SharedKernel` + `Api.Common`
+- `Application` → `Domain` + `SharedKernel` + `Abstractions`
+- `Infrastructure` → `Application` + `Domain` + `SharedKernel` + `Abstractions`
+- `Api (módulo)` → `Application` + `SharedKernel` + `Api.Common`
 - `Host` → todo (punto de composición)
+
+> **Regla crítica**: Ningún proyecto de `Application` referencia `CoreTemplate.Infrastructure`.
+> Los contratos (`ICurrentUser`, `ICurrentTenant`, `IDateTimeProvider`) viven en `Abstractions`.
+> Las implementaciones viven en `Infrastructure`.
 
 ---
 
@@ -44,8 +48,12 @@ CoreTemplate implementa **Clean Architecture** combinada con **Domain-Driven Des
 ```
 BuildingBlocks/
   CoreTemplate.SharedKernel          → Result, PagedResult, AggregateRoot, Entity, ValueObject, IDomainEvent
+  CoreTemplate.Abstractions          → ICurrentUser, ICurrentTenant, ICurrentBranch, IDateTimeProvider  ← NUEVO
   CoreTemplate.Api.Common            → ApiResponse, BaseApiController, GlobalExceptionHandler, ValidationBehavior
-  CoreTemplate.Infrastructure        → BaseDbContext, BaseRepository, configuración EF Core base
+  CoreTemplate.Infrastructure        → BaseDbContext, implementaciones de Abstractions, configuración EF Core base
+  CoreTemplate.Auditing              → IAuditService, AuditLog, AuditSaveChangesInterceptor               ← NUEVO
+  CoreTemplate.Logging               → IAppLogger, ICorrelationContext, CorrelationMiddleware              ← NUEVO
+  CoreTemplate.Monitoring            → Health checks (DB, Redis), endpoints /health                       ← NUEVO
 
 Host/
   CoreTemplate.Api                   → Program.cs, appsettings, punto de entrada
@@ -55,13 +63,13 @@ Modules/
     CoreTemplate.Modules.Auth.Domain          → Usuario, Rol, Permiso, RefreshToken, eventos
     CoreTemplate.Modules.Auth.Application     → Commands, Queries, Handlers, Validators, DTOs
     CoreTemplate.Modules.Auth.Infrastructure  → DbContext, Repositorios, JWT service, Password service
-    CoreTemplate.Modules.Auth.Api             → Controllers, Contracts (Request DTOs)
+    CoreTemplate.Modules.Auth.Api             → Controllers, Contracts, DependencyInjection (AddAuthModule)
 
   Catalogos/
     CoreTemplate.Modules.Catalogos.Domain          → CatalogoItem, eventos
     CoreTemplate.Modules.Catalogos.Application     → Commands, Queries, Handlers, Validators, DTOs
     CoreTemplate.Modules.Catalogos.Infrastructure  → DbContext, Repositorios
-    CoreTemplate.Modules.Catalogos.Api             → Controllers, Contracts
+    CoreTemplate.Modules.Catalogos.Api             → Controllers, Contracts, DependencyInjection (AddCatalogosModule)
 ```
 
 ---
@@ -172,9 +180,61 @@ Serilog configurado con:
 - File sink (producción) — rolling diario
 - Structured logging — todos los logs incluyen `RequestId`, `TenantId` (si multi-tenant), `UserId`
 
+### Correlation ID
+Cada request HTTP recibe un `X-Correlation-Id` único:
+- Si el cliente envía el header `X-Correlation-Id` → se reutiliza
+- Si no → se genera automáticamente
+- Se retorna en la respuesta HTTP
+- Se enriquece en todos los logs del request via `ICorrelationContext`
+
+### IAppLogger
+En lugar de inyectar `ILogger<T>` directamente, usar `IAppLogger` del building block `CoreTemplate.Logging`:
+```csharp
+// Correcto
+internal sealed class LoginCommandHandler(
+    IAppLogger _logger, ...) : IRequestHandler<...>
+
+// Evitar en capas de Application
+private readonly ILogger<LoginCommandHandler> _logger;
+```
+
 ---
 
-## 9. Decisiones de diseño
+## 9. Auditoría
+
+El building block `CoreTemplate.Auditing` registra automáticamente:
+- Creación, modificación y eliminación de entidades (vía EF Core interceptor)
+- Acciones explícitas de usuario: Login, Logout, CambioPassword (vía `IAuditService`)
+
+### Tabla
+`Shared.AuditLogs` — schema dedicado, no interfiere con módulos.
+
+### Campos capturados
+- `NombreEntidad`, `EntidadId` — qué se modificó
+- `Accion` — Created / Updated / Deleted / Login / Logout / etc.
+- `ValoresAnteriores`, `ValoresNuevos` — JSON del estado antes y después
+- `UsuarioId`, `TenantId` — quién lo hizo
+- `DireccionIp`, `UserAgent`, `CorrelationId` — contexto del request
+
+---
+
+## 10. Health Checks / Monitoring
+
+Endpoints disponibles:
+```
+GET /health          → estado general (Healthy / Degraded / Unhealthy)
+GET /health/detail   → detalle por componente (solo Development/Staging)
+GET /health/ready    → Kubernetes readiness probe
+GET /health/live     → Kubernetes liveness probe
+```
+
+Checks incluidos:
+- **Database** — `CanConnectAsync()` al DbContext configurado
+- **Redis** — `PingAsync()` (solo si `EnableTokenBlacklist: true` + Provider = Redis)
+
+---
+
+## 11. Decisiones de diseño
 
 | Decisión | Alternativa considerada | Razón |
 |---|---|---|
@@ -184,3 +244,7 @@ Serilog configurado con:
 | Repositorios por aggregate | Generic repository | Evita métodos innecesarios, cada aggregate tiene su contrato |
 | SaveChangesAsync en repositorio | Unit of Work | Simplicidad — cada operación es su propia transacción |
 | File-scoped namespaces | Block namespaces | Menos indentación, más legible |
+| Abstractions separado de Infrastructure | Contratos en Infrastructure | Application no depende de Infrastructure |
+| IDateTimeProvider en lugar de DateTime.UtcNow | DateTime.UtcNow directo | Testabilidad — los tests controlan el tiempo |
+| IAppLogger sobre ILogger<T> | ILogger<T> directo | Abstracción propia, permite cambiar implementación sin tocar handlers |
+| AuditSaveChangesInterceptor | Auditoría manual en cada handler | Automático, no olvidable, centralizado |

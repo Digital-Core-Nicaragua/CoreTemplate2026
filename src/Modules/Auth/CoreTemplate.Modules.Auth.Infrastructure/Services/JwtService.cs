@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using CoreTemplate.Infrastructure.Services;
+using CoreTemplate.SharedKernel.Abstractions;
 using CoreTemplate.Modules.Auth.Application.Abstractions;
 using CoreTemplate.Modules.Auth.Domain.Aggregates;
 using Microsoft.Extensions.Options;

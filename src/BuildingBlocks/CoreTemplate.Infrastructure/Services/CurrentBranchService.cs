@@ -1,3 +1,4 @@
+using CoreTemplate.SharedKernel.Abstractions;
 using Microsoft.AspNetCore.Http;
 
 namespace CoreTemplate.Infrastructure.Services;

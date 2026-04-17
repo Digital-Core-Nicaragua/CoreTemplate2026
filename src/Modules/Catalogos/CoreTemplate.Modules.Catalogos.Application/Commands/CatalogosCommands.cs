@@ -1,7 +1,7 @@
 using CoreTemplate.Modules.Catalogos.Application.Constants;
 using CoreTemplate.Modules.Catalogos.Domain.Aggregates;
 using CoreTemplate.Modules.Catalogos.Domain.Repositories;
-using CoreTemplate.Infrastructure.Services;
+using CoreTemplate.SharedKernel.Abstractions;
 using CoreTemplate.SharedKernel;
 using FluentValidation;
 using MediatR;

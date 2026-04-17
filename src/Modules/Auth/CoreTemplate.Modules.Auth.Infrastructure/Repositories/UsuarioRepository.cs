@@ -11,18 +11,18 @@ internal sealed class UsuarioRepository(AuthDbContext _db) : IUsuarioRepository
 {
     public Task<Usuario?> GetByIdAsync(Guid id, CancellationToken ct = default) =>
         _db.Usuarios
-            .Include("_roles")
-            .Include("_refreshTokens")
-            .Include("_tokensRestablecimiento")
-            .Include("_codigosRecuperacion")
+            .Include(u => u.Roles)
+            .Include(u => u.TokensRestablecimiento)
+            .Include(u => u.CodigosRecuperacion)
+            .Include(u => u.Sucursales)
             .FirstOrDefaultAsync(u => u.Id == id, ct);
 
     public Task<Usuario?> GetByEmailAsync(string email, Guid? tenantId = null, CancellationToken ct = default) =>
         _db.Usuarios
-            .Include("_roles")
-            .Include("_refreshTokens")
-            .Include("_tokensRestablecimiento")
-            .Include("_codigosRecuperacion")
+            .Include(u => u.Roles)
+            .Include(u => u.TokensRestablecimiento)
+            .Include(u => u.CodigosRecuperacion)
+            .Include(u => u.Sucursales)
             .FirstOrDefaultAsync(u => u.Email.Valor == email.ToLowerInvariant(), ct);
 
     public Task<bool> ExistsByEmailAsync(string email, Guid? tenantId = null, CancellationToken ct = default) =>
@@ -30,25 +30,24 @@ internal sealed class UsuarioRepository(AuthDbContext _db) : IUsuarioRepository
 
     public Task<Usuario?> GetByTokenRestablecimientoAsync(string token, CancellationToken ct = default) =>
         _db.Usuarios
-            .Include("_roles")
-            .Include("_refreshTokens")
-            .Include("_tokensRestablecimiento")
-            .Include("_codigosRecuperacion")
+            .Include(u => u.Roles)
+            .Include(u => u.TokensRestablecimiento)
+            .Include(u => u.CodigosRecuperacion)
+            .Include(u => u.Sucursales)
             .FirstOrDefaultAsync(u =>
                 u.TokensRestablecimiento.Any(t => t.Token == token && !t.EsUsado && t.ExpiraEn > DateTime.UtcNow), ct);
 
-    public async Task<PagedResult<Usuario>> GetPagedAsync(int pagina, int tamanoPagina, EstadoUsuario? estado = null, CancellationToken ct = default)
+    public async Task<PagedResult<Usuario>> GetPagedAsync(
+        int pagina, int tamanoPagina, EstadoUsuario? estado = null, CancellationToken ct = default)
     {
         var query = _db.Usuarios.AsQueryable();
 
         if (estado.HasValue)
-        {
             query = query.Where(u => u.Estado == estado.Value);
-        }
 
         var total = await query.CountAsync(ct);
         var items = await query
-            .Include("_roles")
+            .Include(u => u.Roles)
             .OrderBy(u => u.CreadoEn)
             .Skip((pagina - 1) * tamanoPagina)
             .Take(tamanoPagina)

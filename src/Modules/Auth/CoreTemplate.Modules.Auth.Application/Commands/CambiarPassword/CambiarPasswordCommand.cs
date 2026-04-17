@@ -3,7 +3,7 @@ using CoreTemplate.Modules.Auth.Application.Constants;
 using CoreTemplate.Modules.Auth.Domain.Enums;
 using CoreTemplate.Modules.Auth.Domain.Repositories;
 using CoreTemplate.Modules.Auth.Domain.ValueObjects;
-using CoreTemplate.Infrastructure.Services;
+using CoreTemplate.SharedKernel.Abstractions;
 using CoreTemplate.SharedKernel;
 using FluentValidation;
 using MediatR;

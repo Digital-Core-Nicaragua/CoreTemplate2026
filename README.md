@@ -13,8 +13,14 @@ Clona esta plantilla, ejecuta un script y tendrás un sistema funcional con aute
 | **Auth** | Login JWT, Sesiones gestionables, Token Blacklist, Tipos de usuario, Canales de acceso, 2FA TOTP, Roles y Permisos, Sucursales (opcional), Catálogo de Acciones (opcional), Auditoría |
 | **Catálogos** | Catálogo de ejemplo completamente implementado — sirve como patrón para crear nuevos catálogos |
 | **SharedKernel** | `Result<T>`, `PagedResult<T>`, `AggregateRoot`, `Entity`, `ValueObject`, `IDomainEvent` |
+| **Abstractions** | `ICurrentUser`, `ICurrentTenant`, `ICurrentBranch`, `IDateTimeProvider` — contratos sin dependencia de Infrastructure |
 | **Api.Common** | `ApiResponse<T>`, `BaseApiController`, `GlobalExceptionHandler`, `ValidationBehavior` |
-| **Infrastructure** | `BaseDbContext` multi-tenant, `ICurrentUser`, `ICurrentTenant`, `ICurrentBranch`, `TenantMiddleware` |
+| **Infrastructure** | `BaseDbContext` multi-tenant, implementaciones de Abstractions, `TenantMiddleware` |
+| **Auditing** 🔧 | `IAuditService`, `AuditLog`, `AuditSaveChangesInterceptor` — auditoría automática y explícita |
+| **Logging** 🔧 | `IAppLogger`, `ICorrelationContext`, `CorrelationMiddleware` — logging estructurado con X-Correlation-Id |
+| **Monitoring** 🔧 | Health checks para DB y Redis, endpoints `/health`, `/health/ready`, `/health/live` |
+
+> 🔧 = En plan de implementación. Ver [PLAN-MEJORAS-BUILDING-BLOCKS.md](docs/PLAN-MEJORAS-BUILDING-BLOCKS.md)
 
 ---
 
@@ -380,8 +386,12 @@ POST /api/auth/logout  { refreshToken }
 src/
 ├── BuildingBlocks/
 │   ├── SharedKernel       → Result, PagedResult, AggregateRoot, Entity, ValueObject
+│   ├── Abstractions       → ICurrentUser, ICurrentTenant, ICurrentBranch, IDateTimeProvider
 │   ├── Api.Common         → ApiResponse, BaseApiController, GlobalExceptionHandler
-│   └── Infrastructure     → BaseDbContext, ICurrentUser, ICurrentTenant, ICurrentBranch
+│   ├── Infrastructure     → BaseDbContext, implementaciones de Abstractions, TenantMiddleware
+│   ├── Auditing 🔧         → IAuditService, AuditLog, AuditSaveChangesInterceptor
+│   ├── Logging 🔧          → IAppLogger, ICorrelationContext, CorrelationMiddleware
+│   └── Monitoring 🔧       → Health checks (DB, Redis), endpoints /health
 ├── Host/
 │   └── MiSistema.Api      → Program.cs, appsettings, punto de entrada
 └── Modules/
@@ -394,13 +404,15 @@ tests/
 └── Catalogos.Tests        → 15 tests
 ```
 
+> 🔧 = En plan de implementación. Ver [PLAN-MEJORAS-BUILDING-BLOCKS.md](docs/PLAN-MEJORAS-BUILDING-BLOCKS.md)
+
 ### Capas por módulo
 
 ```
 Domain         → Aggregates, ValueObjects, Events, Repositories (interfaces)
 Application    → Commands, Queries, Handlers, Validators, DTOs
 Infrastructure → DbContext, Repositories, Servicios, Migraciones
-Api            → Controllers, Contracts (Request DTOs)
+Api            → Controllers, Contracts, DependencyInjection (AddXxxModule)
 ```
 
 ---
@@ -411,6 +423,7 @@ Api            → Controllers, Contracts (Request DTOs)
 |---|---|
 | `Auth` | Usuarios, Roles, Permisos, UsuarioRoles, RolPermisos, Sesiones, TokensRestablecimiento, CodigosRecuperacion2FA, RegistrosAuditoria, Sucursales, UsuarioSucursales, AsignacionesRol, Acciones, ConfiguracionesTenant |
 | `Catalogos` | CatalogoItems |
+| `Shared` 🔧 | AuditLogs |
 
 ---
 
@@ -439,7 +452,21 @@ Resultado esperado: **126 tests — 0 fallos**
 | xUnit v3 | 3 | Tests unitarios |
 | FluentAssertions | 8 | Assertions en tests |
 | NSubstitute | 5 | Mocks en tests |
-| Swashbuckle | 10 | Swagger/OpenAPI |
+| Swashbuckle | 6.9 | Swagger/OpenAPI |
+
+---
+
+## Roadmap de mejoras
+
+Ver [PLAN-MEJORAS-BUILDING-BLOCKS.md](docs/PLAN-MEJORAS-BUILDING-BLOCKS.md) para el detalle completo.
+
+| Fase | Building Block | Estado |
+|---|---|---|
+| 1 | `CoreTemplate.Abstractions` | 🔧 Pendiente |
+| 2 | `CoreTemplate.Auditing` | 🔧 Pendiente |
+| 3 | `CoreTemplate.Logging` | 🔧 Pendiente |
+| 4 | `CoreTemplate.Monitoring` | 🔧 Pendiente |
+| 5 | `DependencyInjection` en capas Api | 🔧 Pendiente |
 
 ---
 

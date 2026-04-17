@@ -4,7 +4,7 @@ using CoreTemplate.Modules.Auth.Application.DTOs;
 using CoreTemplate.Modules.Auth.Domain.Aggregates;
 using CoreTemplate.Modules.Auth.Domain.Enums;
 using CoreTemplate.Modules.Auth.Domain.Repositories;
-using CoreTemplate.Infrastructure.Services;
+using CoreTemplate.SharedKernel.Abstractions;
 using CoreTemplate.SharedKernel;
 using FluentValidation;
 using MediatR;

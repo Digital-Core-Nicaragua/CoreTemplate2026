@@ -22,6 +22,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CoreTemplate.SharedKernel\CoreTemplate.SharedKernel.csproj" />
+    <ProjectReference Include="..\CoreTemplate.Logging\CoreTemplate.Logging.csproj" />
+    <ProjectReference Include="..\CoreTemplate.Auditing\CoreTemplate.Auditing.csproj" />
+    <ProjectReference Include="..\CoreTemplate.Monitoring\CoreTemplate.Monitoring.csproj" />
   </ItemGroup>
 
 </Project>

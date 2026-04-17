@@ -11,8 +11,8 @@ public sealed class SesionLimitesTests
 {
     private readonly ISesionRepository _sesionRepo = Substitute.For<ISesionRepository>();
     private readonly IConfiguracionTenantRepository _configTenantRepo = Substitute.For<IConfiguracionTenantRepository>();
-    private readonly CoreTemplate.Infrastructure.Services.ICurrentTenant _currentTenant =
-        Substitute.For<CoreTemplate.Infrastructure.Services.ICurrentTenant>();
+    private readonly CoreTemplate.SharedKernel.Abstractions.ICurrentTenant _currentTenant =
+        Substitute.For<CoreTemplate.SharedKernel.Abstractions.ICurrentTenant>();
 
     private SesionService CrearServicio(int maxSesiones = 3,
         AccionAlLlegarLimiteSesiones accion = AccionAlLlegarLimiteSesiones.CerrarMasAntigua)

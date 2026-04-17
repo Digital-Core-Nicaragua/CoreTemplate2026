@@ -7,13 +7,15 @@ namespace CoreTemplate.Modules.Auth.Infrastructure.Services;
 /// Implementación del servicio de contraseñas usando BCrypt.
 /// Work factor configurable para balancear seguridad y rendimiento.
 /// </summary>
-internal sealed class PasswordService(IOptions<PasswordPolicySettings> _policy) : IPasswordService
+internal sealed class PasswordService(
+    IOptions<PasswordPolicySettings> _policy,
+    IOptions<AuthSettings> _authSettings) : IPasswordService
 {
     private readonly PasswordPolicySettings _policySettings = _policy.Value;
 
     /// <inheritdoc/>
     public string HashPassword(string password) =>
-        BCrypt.Net.BCrypt.HashPassword(password, workFactor: 12);
+        BCrypt.Net.BCrypt.HashPassword(password, workFactor: _authSettings.Value.BcryptWorkFactor);
 
     /// <inheritdoc/>
     public bool VerifyPassword(string password, string hash) =>

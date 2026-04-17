@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CoreTemplate.Infrastructure.Settings;
+using CoreTemplate.SharedKernel.Abstractions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
@@ -8,14 +9,6 @@ namespace CoreTemplate.Infrastructure.Services;
 /// <summary>
 /// Implementación de <see cref="ICurrentTenant"/> que resuelve el tenant
 /// de la solicitud actual usando la estrategia configurada en <c>TenantSettings</c>.
-/// <para>
-/// Estrategias de resolución (en orden de prioridad):
-/// <list type="number">
-///   <item>Header HTTP: <c>X-Tenant-Id</c></item>
-///   <item>Claim JWT: <c>tenant_id</c></item>
-///   <item>Subdominio: <c>tenant1.miapp.com</c></item>
-/// </list>
-/// </para>
 /// </summary>
 internal sealed class CurrentTenantService(
     IHttpContextAccessor _httpContextAccessor,

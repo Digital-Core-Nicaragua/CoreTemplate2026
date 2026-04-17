@@ -2,23 +2,28 @@
   <Folder Name="/src/" />
   <Folder Name="/src/BuildingBlocks/">
     <Project Path="src/BuildingBlocks/CoreTemplate.Api.Common/CoreTemplate.Api.Common.csproj" />
+    <Project Path="src/BuildingBlocks/CoreTemplate.Auditing/CoreTemplate.Auditing.csproj" />
     <Project Path="src/BuildingBlocks/CoreTemplate.Infrastructure/CoreTemplate.Infrastructure.csproj" />
+    <Project Path="src/BuildingBlocks/CoreTemplate.Logging/CoreTemplate.Logging.csproj" />
+    <Project Path="src/BuildingBlocks/CoreTemplate.Monitoring/CoreTemplate.Monitoring.csproj" />
     <Project Path="src/BuildingBlocks/CoreTemplate.SharedKernel/CoreTemplate.SharedKernel.csproj" />
   </Folder>
   <Folder Name="/src/Host/">
     <Project Path="src/Host/CoreTemplate.Api/CoreTemplate.Api.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Auth/">
     <Project Path="src/Modules/Auth/CoreTemplate.Modules.Auth.Api/CoreTemplate.Modules.Auth.Api.csproj" />
     <Project Path="src/Modules/Auth/CoreTemplate.Modules.Auth.Application/CoreTemplate.Modules.Auth.Application.csproj" />
     <Project Path="src/Modules/Auth/CoreTemplate.Modules.Auth.Domain/CoreTemplate.Modules.Auth.Domain.csproj" />
     <Project Path="src/Modules/Auth/CoreTemplate.Modules.Auth.Infrastructure/CoreTemplate.Modules.Auth.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Catalogos/">
     <Project Path="src/Modules/Catalogos/CoreTemplate.Modules.Catalogos.Api/CoreTemplate.Modules.Catalogos.Api.csproj" />
     <Project Path="src/Modules/Catalogos/CoreTemplate.Modules.Catalogos.Application/CoreTemplate.Modules.Catalogos.Application.csproj" />
     <Project Path="src/Modules/Catalogos/CoreTemplate.Modules.Catalogos.Domain/CoreTemplate.Modules.Catalogos.Domain.csproj" />
     <Project Path="src/Modules/Catalogos/CoreTemplate.Modules.Catalogos.Infrastructure/CoreTemplate.Modules.Catalogos.Infrastructure.csproj" />
   </Folder>
-  <Folder Name="/src/Modules/" />
-  <Folder Name="/src/Modules/Auth/" />
-  <Folder Name="/src/Modules/Catalogos/" />
   <Folder Name="/tests/">
     <Project Path="tests/CoreTemplate.Modules.Auth.Tests/CoreTemplate.Modules.Auth.Tests.csproj" />
     <Project Path="tests/CoreTemplate.Modules.Catalogos.Tests/CoreTemplate.Modules.Catalogos.Tests.csproj" />

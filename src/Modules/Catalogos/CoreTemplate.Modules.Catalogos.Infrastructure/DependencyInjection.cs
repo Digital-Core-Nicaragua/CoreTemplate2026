@@ -1,3 +1,4 @@
+using CoreTemplate.Modules.Catalogos.Application;
 using CoreTemplate.Modules.Catalogos.Domain.Repositories;
 using CoreTemplate.Modules.Catalogos.Infrastructure.Persistence;
 using CoreTemplate.Modules.Catalogos.Infrastructure.Repositories;
@@ -38,6 +39,19 @@ public static class DependencyInjection
 
         services.AddScoped<ICatalogoItemRepository, CatalogoItemRepository>();
 
+        return services;
+    }
+
+    /// <summary>
+    /// Registra el modulo Catalogos completo: Application + Infrastructure.
+    /// Usar este metodo desde Program.cs.
+    /// </summary>
+    public static IServiceCollection AddCatalogosModule(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddCatalogosApplication(configuration);
+        services.AddCatalogosInfrastructure(configuration);
         return services;
     }
 }
