@@ -11,7 +11,7 @@ skinparam component {
 
 package "Host" {
   [CoreTemplate.Api\nProgram.cs] as host
-}
+}Mermaid
 
 package "Modules / Auth" {
   [Auth.Api\nControllers] as authApi

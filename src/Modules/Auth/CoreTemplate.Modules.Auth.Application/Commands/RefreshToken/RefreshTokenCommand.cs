@@ -1,6 +1,7 @@
 using CoreTemplate.Modules.Auth.Application.Abstractions;
 using CoreTemplate.Modules.Auth.Application.Constants;
 using CoreTemplate.Modules.Auth.Application.DTOs;
+using CoreTemplate.Modules.Auth.Domain.Enums;
 using CoreTemplate.Modules.Auth.Domain.Repositories;
 using CoreTemplate.SharedKernel;
 using MediatR;
@@ -15,6 +16,7 @@ public sealed record RefreshTokenCommand(
 internal sealed class RefreshTokenCommandHandler(
     IUsuarioRepository _usuarioRepo,
     ISesionRepository _sesionRepo,
+    IRegistroAuditoriaRepository _auditoriaRepo,
     IJwtService _jwtService,
     IOptions<AuthSettings> _authSettings) : IRequestHandler<RefreshTokenCommand, Result<TokenResponseDto>>
 {
@@ -43,6 +45,10 @@ internal sealed class RefreshTokenCommandHandler(
 
         var nuevoAccessToken = _jwtService.GenerarAccessToken(usuario);
         var expiraEn = _jwtService.ObtenerExpiracionAccessToken();
+
+        await _auditoriaRepo.AddAsync(Domain.Entities.RegistroAuditoria.Crear(
+            usuario.TenantId, usuario.Id, usuario.Email.Valor,
+            EventoAuditoria.TokenRefrescado, cmd.Ip, string.Empty), ct);
 
         return Result<TokenResponseDto>.Success(
             new TokenResponseDto(nuevoAccessToken, nuevoRefreshToken, expiraEn),

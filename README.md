@@ -181,6 +181,17 @@ Con `EnableSessionLimitsPerTenant: true` cada tenant puede tener su propio lími
 
 Con `EnableTokenBlacklist: true`, los tokens se invalidan inmediatamente al hacer logout o cambiar contraseña.
 
+```mermaid
+stateDiagram-v2
+    [*] --> Activo: Login exitoso
+    Activo --> Revocado: Logout / CambioPassword
+    Activo --> Expirado: TTL vencido (15 min)
+    Revocado --> [*]: Blacklist entry expira
+    Expirado --> [*]
+    Revocado --> Rechazado: Request con token revocado
+    Rechazado --> [*]: 401 Unauthorized
+```
+
 ### Tipos de usuario
 
 ```csharp
@@ -236,6 +247,31 @@ Con `UseActionCatalog: true`, los permisos se gestionan como aggregates desde `/
 | `TwoFactorEnabled: false` | 2FA deshabilitado |
 | `TwoFactorEnabled: true, TwoFactorRequired: false` | 2FA opcional por usuario |
 | `TwoFactorEnabled: true, TwoFactorRequired: true` | 2FA obligatorio (solo usuarios Humano) |
+
+```mermaid
+flowchart TD
+    LOGIN[POST /login] --> CREDS{Credenciales\nválidas?}
+    CREDS -- No --> LOCKOUT{Intentos\nexcedidos?}
+    LOCKOUT -- Sí --> BLOCKED[403 Cuenta bloqueada]
+    LOCKOUT -- No --> ERR[401 Credenciales inválidas]
+
+    CREDS -- Sí --> TIPO{TipoUsuario}
+    TIPO -- Sistema / Integración --> SESIONES
+    TIPO -- Humano --> FA{2FA\nhabilitado?}
+
+    FA -- No --> SESIONES
+    FA -- Sí --> TEMP[200 tokenTemporal\nrequires2FA: true]
+    TEMP --> TOTP[POST /2fa/verificar]
+    TOTP --> VALID{Código\nválido?}
+    VALID -- No --> ERR2[401 Código inválido]
+    VALID -- Sí --> SESIONES
+
+    SESIONES{Límite de\nsesiones?} -- Bajo límite --> TOKEN[200 accessToken + refreshToken]
+    SESIONES -- Límite alcanzado --> ACCION{AccionAlLlegarLimite}
+    ACCION -- CerrarMasAntigua --> CIERRA[Cierra sesión más antigua]
+    CIERRA --> TOKEN
+    ACCION -- BloquearNuevoLogin --> DENY[403 Límite de sesiones alcanzado]
+```
 
 ---
 
@@ -335,34 +371,76 @@ Con `UseActionCatalog: true`, los permisos se gestionan como aggregates desde `/
 
 ### Login normal
 
-```
-POST /api/auth/login  { email, password, canal }
-→ 200 { accessToken, refreshToken, usuario }
+```mermaid
+sequenceDiagram
+    actor U as Usuario
+    participant API as /api/auth/login
+    participant Auth as AuthService
+    participant DB as Database
+
+    U->>API: POST { email, password, canal }
+    API->>Auth: ValidarCredenciales()
+    Auth->>DB: BuscarUsuario(email)
+    DB-->>Auth: Usuario
+    Auth->>Auth: VerificarPassword()
+    Auth->>DB: CrearSesion()
+    Auth-->>API: accessToken + refreshToken
+    API-->>U: 200 { accessToken, refreshToken, usuario }
 ```
 
 ### Login con 2FA activo
 
-```
-POST /api/auth/login
-→ 200 { requires2FA: true, tokenTemporal }
+```mermaid
+sequenceDiagram
+    actor U as Usuario
+    participant API as /api/auth
+    participant Auth as AuthService
 
-POST /api/auth/2fa/verificar  { tokenTemporal, codigo }
-→ 200 { accessToken, refreshToken, usuario }
+    U->>API: POST /login { email, password, canal }
+    API->>Auth: ValidarCredenciales()
+    Auth-->>API: requires2FA = true
+    API-->>U: 200 { requires2FA: true, tokenTemporal }
+
+    U->>API: POST /2fa/verificar { tokenTemporal, codigo }
+    API->>Auth: VerificarTOTP(codigo)
+    Auth-->>API: OK
+    API-->>U: 200 { accessToken, refreshToken, usuario }
 ```
 
 ### Renovar token
 
-```
-POST /api/auth/refresh  { refreshToken }
-→ 200 { accessToken, refreshToken, accessTokenExpiraEn }
+```mermaid
+sequenceDiagram
+    actor U as Usuario
+    participant API as /api/auth/refresh
+    participant Auth as AuthService
+
+    U->>API: POST { refreshToken }
+    API->>Auth: ValidarRefreshToken()
+    Auth->>Auth: GenerarNuevoAccessToken()
+    Auth-->>API: nuevos tokens
+    API-->>U: 200 { accessToken, refreshToken, accessTokenExpiraEn }
 ```
 
 ### Logout con blacklist
 
-```
-POST /api/auth/logout  { refreshToken }
-→ Sesión revocada + AccessToken en blacklist
-→ Requests posteriores con ese token → 401
+```mermaid
+sequenceDiagram
+    actor U as Usuario
+    participant API as /api/auth/logout
+    participant Auth as AuthService
+    participant BL as TokenBlacklist
+
+    U->>API: POST { refreshToken } + Bearer accessToken
+    API->>Auth: RevocarSesion(refreshToken)
+    Auth->>BL: AgregarABlacklist(accessToken)
+    Auth-->>API: OK
+    API-->>U: 200 Sesión cerrada
+
+    U->>API: GET /cualquier-endpoint (mismo accessToken)
+    API->>BL: EstaEnBlacklist(accessToken)?
+    BL-->>API: true
+    API-->>U: 401 Unauthorized
 ```
 
 ---
@@ -381,6 +459,27 @@ POST /api/auth/logout  { refreshToken }
 ---
 
 ## Arquitectura
+
+```mermaid
+flowchart TD
+    Host["🌐 Host\nMiSistema.Api"] --> Auth["🔐 Auth Module"]
+    Host --> Catalogos["📦 Catalogos Module"]
+    Host --> BB["🧱 BuildingBlocks"]
+
+    Auth --> BB
+    Catalogos --> BB
+
+    BB --> SK["SharedKernel\nResult, AggregateRoot, Entity"]
+    BB --> AB["Abstractions\nICurrentUser, ICurrentTenant"]
+    BB --> AC["Api.Common\nBaseApiController, ApiResponse"]
+    BB --> INF["Infrastructure\nBaseDbContext, TenantMiddleware"]
+    BB --> AUD["Auditing 🔧"]
+    BB --> LOG["Logging 🔧"]
+    BB --> MON["Monitoring 🔧"]
+
+    INF --> DB[("SQL Server\nPostgreSQL")]
+    INF --> REDIS[("Redis\nToken Blacklist")]
+```
 
 ```
 src/
@@ -408,11 +507,13 @@ tests/
 
 ### Capas por módulo
 
-```
-Domain         → Aggregates, ValueObjects, Events, Repositories (interfaces)
-Application    → Commands, Queries, Handlers, Validators, DTOs
-Infrastructure → DbContext, Repositories, Servicios, Migraciones
-Api            → Controllers, Contracts, DependencyInjection (AddXxxModule)
+```mermaid
+flowchart LR
+    API["Api\nControllers, Contracts\nDependencyInjection"] --> APP
+    APP["Application\nCommands, Queries\nHandlers, Validators, DTOs"] --> DOM
+    DOM["Domain\nAggregates, ValueObjects\nEvents, Repositories"]
+    INF["Infrastructure\nDbContext, Repositories\nServicios, Migraciones"] --> APP
+    INF --> DOM
 ```
 
 ---
@@ -467,6 +568,20 @@ Ver [PLAN-MEJORAS-BUILDING-BLOCKS.md](docs/PLAN-MEJORAS-BUILDING-BLOCKS.md) para
 | 3 | `CoreTemplate.Logging` | 🔧 Pendiente |
 | 4 | `CoreTemplate.Monitoring` | 🔧 Pendiente |
 | 5 | `DependencyInjection` en capas Api | 🔧 Pendiente |
+
+```mermaid
+flowchart LR
+    F1["Fase 1\nAbstractions"] --> F2["Fase 2\nAuditing"]
+    F2 --> F3["Fase 3\nLogging"]
+    F3 --> F4["Fase 4\nMonitoring"]
+    F4 --> F5["Fase 5\nDependencyInjection"]
+
+    style F1 fill:#f0ad4e,color:#000
+    style F2 fill:#f0ad4e,color:#000
+    style F3 fill:#f0ad4e,color:#000
+    style F4 fill:#f0ad4e,color:#000
+    style F5 fill:#f0ad4e,color:#000
+```
 
 ---
 

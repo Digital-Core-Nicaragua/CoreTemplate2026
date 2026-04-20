@@ -42,5 +42,8 @@ public enum EventoAuditoria
     DosFactoresVerificado = 12,
 
     /// <summary>Verificación de 2FA fallida.</summary>
-    DosFactoresFallido = 13
+    DosFactoresFallido = 13,
+
+    /// <summary>Nuevo usuario registrado en el sistema.</summary>
+    UsuarioRegistrado = 14
 }

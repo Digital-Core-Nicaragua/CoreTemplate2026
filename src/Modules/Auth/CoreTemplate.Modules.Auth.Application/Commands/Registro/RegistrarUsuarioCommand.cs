@@ -37,6 +37,7 @@ internal sealed class RegistrarUsuarioCommandValidator : AbstractValidator<Regis
 internal sealed class RegistrarUsuarioCommandHandler(
     IUsuarioRepository _usuarioRepo,
     IRolRepository _rolRepo,
+    IRegistroAuditoriaRepository _auditoriaRepo,
     IPasswordService _passwordService,
     IOptions<PasswordPolicySettings> _policy) : IRequestHandler<RegistrarUsuarioCommand, Result<Guid>>
 {
@@ -85,6 +86,11 @@ internal sealed class RegistrarUsuarioCommandHandler(
         }
 
         await _usuarioRepo.AddAsync(usuario, ct);
+
+        await _auditoriaRepo.AddAsync(Domain.Entities.RegistroAuditoria.Crear(
+            usuario.TenantId, usuario.Id, usuario.Email.Valor,
+            EventoAuditoria.UsuarioRegistrado, string.Empty, string.Empty), ct);
+
         return Result<Guid>.Success(usuario.Id, AuthSuccessMessages.UsuarioRegistrado);
     }
 }

@@ -11,6 +11,7 @@ public sealed class RegistrarUsuarioCommandHandlerTests
 {
     private readonly IUsuarioRepository _usuarioRepo = Substitute.For<IUsuarioRepository>();
     private readonly IRolRepository _rolRepo = Substitute.For<IRolRepository>();
+    private readonly IRegistroAuditoriaRepository _auditoriaRepo = Substitute.For<IRegistroAuditoriaRepository>();
     private readonly IPasswordService _passwordService = Substitute.For<IPasswordService>();
     private readonly IOptions<PasswordPolicySettings> _policy = Options.Create(new PasswordPolicySettings
     {
@@ -22,7 +23,7 @@ public sealed class RegistrarUsuarioCommandHandlerTests
     });
 
     private RegistrarUsuarioCommandHandler CrearHandler() => new(
-        _usuarioRepo, _rolRepo, _passwordService, _policy);
+        _usuarioRepo, _rolRepo, _auditoriaRepo, _passwordService, _policy);
 
     [Fact]
     public async Task Handle_DatosValidos_DebeRegistrarUsuario()

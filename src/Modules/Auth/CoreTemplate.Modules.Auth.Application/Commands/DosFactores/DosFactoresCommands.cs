@@ -75,6 +75,7 @@ internal sealed class Confirmar2FACommandValidator : AbstractValidator<Confirmar
 
 internal sealed class Confirmar2FACommandHandler(
     IUsuarioRepository _usuarioRepo,
+    IRegistroAuditoriaRepository _auditoriaRepo,
     ITotpService _totpService,
     ICurrentUser _currentUser) : IRequestHandler<Confirmar2FACommand, Result>
 {
@@ -112,6 +113,11 @@ internal sealed class Confirmar2FACommandHandler(
         }
 
         await _usuarioRepo.UpdateAsync(usuario, ct);
+
+        await _auditoriaRepo.AddAsync(Domain.Entities.RegistroAuditoria.Crear(
+            usuario.TenantId, usuario.Id, usuario.Email.Valor,
+            EventoAuditoria.DosFactoresActivado, string.Empty, string.Empty), ct);
+
         return Result.Success();
     }
 }
@@ -220,6 +226,7 @@ public sealed record Desactivar2FACommand(string Codigo) : IRequest<Result>;
 
 internal sealed class Desactivar2FACommandHandler(
     IUsuarioRepository _usuarioRepo,
+    IRegistroAuditoriaRepository _auditoriaRepo,
     ITotpService _totpService,
     ICurrentUser _currentUser) : IRequestHandler<Desactivar2FACommand, Result>
 {
@@ -253,6 +260,11 @@ internal sealed class Desactivar2FACommandHandler(
         }
 
         await _usuarioRepo.UpdateAsync(usuario, ct);
+
+        await _auditoriaRepo.AddAsync(Domain.Entities.RegistroAuditoria.Crear(
+            usuario.TenantId, usuario.Id, usuario.Email.Valor,
+            EventoAuditoria.DosFactoresDesactivado, string.Empty, string.Empty), ct);
+
         return Result.Success();
     }
 }

@@ -24,6 +24,7 @@ internal sealed class SolicitarRestablecimientoCommandValidator : AbstractValida
 
 internal sealed class SolicitarRestablecimientoCommandHandler(
     IUsuarioRepository _usuarioRepo,
+    IRegistroAuditoriaRepository _auditoriaRepo,
     IOptions<AuthSettings> _authSettings) : IRequestHandler<SolicitarRestablecimientoCommand, Result>
 {
     public async Task<Result> Handle(SolicitarRestablecimientoCommand cmd, CancellationToken ct)
@@ -39,6 +40,10 @@ internal sealed class SolicitarRestablecimientoCommandHandler(
         var token = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(64));
         usuario.AgregarTokenRestablecimiento(token, _authSettings.Value.PasswordResetTokenExpirationHours);
         await _usuarioRepo.UpdateAsync(usuario, ct);
+
+        await _auditoriaRepo.AddAsync(Domain.Entities.RegistroAuditoria.Crear(
+            usuario.TenantId, usuario.Id, usuario.Email.Valor,
+            EventoAuditoria.RestablecimientoSolicitado, string.Empty, string.Empty), ct);
 
         // El evento RestablecimientoSolicitadoEvent contiene el token
         // El sistema implementador escucha ese evento y envía el email
