@@ -1,6 +1,8 @@
+using CoreTemplate.Auditing.Interceptors;
 using CoreTemplate.SharedKernel.Abstractions;
 using CoreTemplate.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Options;
 
 namespace CoreTemplate.Infrastructure.Persistence;
@@ -42,6 +44,7 @@ public abstract class BaseDbContext : DbContext
 {
     private readonly ICurrentTenant _currentTenant;
     private readonly TenantSettings _tenantSettings;
+    private readonly AuditSaveChangesInterceptor? _auditInterceptor;
 
     /// <summary>
     /// Constructor para uso en producción con inyección de dependencias.
@@ -49,10 +52,21 @@ public abstract class BaseDbContext : DbContext
     protected BaseDbContext(
         DbContextOptions options,
         ICurrentTenant currentTenant,
-        IOptions<TenantSettings> tenantSettings) : base(options)
+        IOptions<TenantSettings> tenantSettings,
+        AuditSaveChangesInterceptor? auditInterceptor = null) : base(options)
     {
         _currentTenant = currentTenant;
         _tenantSettings = tenantSettings.Value;
+        _auditInterceptor = auditInterceptor;
+    }
+
+    /// <inheritdoc/>
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        if (_auditInterceptor is not null)
+            optionsBuilder.AddInterceptors(_auditInterceptor);
+
+        base.OnConfiguring(optionsBuilder);
     }
 
     /// <inheritdoc/>

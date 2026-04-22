@@ -90,3 +90,110 @@ public sealed class OrganizationSettings
     /// <summary>Habilita el soporte de sucursales por usuario.</summary>
     public bool EnableBranches { get; init; } = false;
 }
+
+/// <summary>
+/// Configuración del portal de clientes externos.
+/// Sección: <c>CustomerPortalSettings</c>.
+/// <para>
+/// Cuando <c>EnableCustomerPortal = false</c> (default), todos los endpoints
+/// del portal están deshabilitados y la tabla <c>Auth.UsuariosCliente</c> no se usa.
+/// </para>
+/// </summary>
+public sealed class CustomerPortalSettings
+{
+    public const string SectionName = "CustomerPortalSettings";
+
+    /// <summary>Activa el portal de clientes. Default: false.</summary>
+    public bool EnableCustomerPortal { get; init; } = false;
+
+    /// <summary>
+    /// Si true, cualquier visitante puede registrarse como cliente.
+    /// Si false, el registro está cerrado y el endpoint retorna 403. Default: true.
+    /// </summary>
+    public bool RegistroHabilitado { get; init; } = true;
+
+    /// <summary>
+    /// Si true, el cliente debe verificar su email antes de poder hacer login.
+    /// Si false, el estado pasa directamente a Active al registrarse. Default: true.
+    /// </summary>
+    public bool RequireEmailVerification { get; init; } = true;
+
+    /// <summary>
+    /// Si true, el cliente debe verificar su teléfono además del email.
+    /// Requiere que el teléfono sea proporcionado al registrarse. Default: false.
+    /// </summary>
+    public bool RequirePhoneVerification { get; init; } = false;
+
+    /// <summary>
+    /// Si true, el cliente puede ver y cerrar sus propias sesiones activas.
+    /// Default: false.
+    /// </summary>
+    public bool EnableSessionManagement { get; init; } = false;
+
+    /// <summary>Configuración de proveedores OAuth externos.</summary>
+    public CustomerPortalOAuthSettings OAuth { get; init; } = new();
+
+    /// <summary>Configuración del registro por teléfono (WhatsApp/SMS).</summary>
+    public RegistroPorTelefonoSettings RegistroPorTelefono { get; init; } = new();
+}
+
+/// <summary>
+/// Configuración de proveedores OAuth para el portal de clientes.
+/// </summary>
+public sealed class CustomerPortalOAuthSettings
+{
+    /// <summary>Configuración de Google OAuth.</summary>
+    public GoogleOAuthSettings Google { get; init; } = new();
+
+    /// <summary>Configuración de Facebook OAuth.</summary>
+    public FacebookOAuthSettings Facebook { get; init; } = new();
+}
+
+/// <summary>
+/// Configuración de Google OAuth 2.0.
+/// El frontend obtiene el idToken y lo envía al backend para validación.
+/// </summary>
+public sealed class GoogleOAuthSettings
+{
+    /// <summary>Activa el login con Google. Default: false.</summary>
+    public bool Enabled { get; init; } = false;
+
+    /// <summary>
+    /// Client ID de la app en Google Cloud Console.
+    /// Se usa para validar que el idToken fue emitido para esta app.
+    /// </summary>
+    public string ClientId { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// Configuración de Facebook OAuth.
+/// El frontend obtiene el accessToken y lo envía al backend para validación.
+/// </summary>
+public sealed class FacebookOAuthSettings
+{
+    /// <summary>Activa el login con Facebook. Default: false.</summary>
+    public bool Enabled { get; init; } = false;
+
+    /// <summary>App ID de la app en Facebook Developers.</summary>
+    public string AppId { get; init; } = string.Empty;
+
+    /// <summary>App Secret de la app en Facebook Developers.</summary>
+    public string AppSecret { get; init; } = string.Empty;
+}
+
+/// <summary>
+/// Configuración del registro e identificación por teléfono (WhatsApp/SMS).
+/// Cuando está habilitado, los clientes pueden registrarse y hacer login
+/// usando su número de teléfono + OTP en lugar de email + contraseña.
+/// </summary>
+public sealed class RegistroPorTelefonoSettings
+{
+    /// <summary>Activa el registro e identificación por teléfono. Default: false.</summary>
+    public bool Enabled { get; init; } = false;
+
+    /// <summary>Canal de envío del OTP: "WhatsApp" o "SMS". Default: WhatsApp.</summary>
+    public string Proveedor { get; init; } = "WhatsApp";
+
+    /// <summary>Minutos de validez del OTP. Default: 10.</summary>
+    public int OtpExpirationMinutes { get; init; } = 10;
+}

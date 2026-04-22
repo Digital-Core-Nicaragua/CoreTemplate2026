@@ -329,6 +329,105 @@ namespace CoreTemplate.Modules.Auth.Infrastructure.Migrations
                     b.ToTable("Usuarios", "Auth");
                 });
 
+            modelBuilder.Entity("CoreTemplate.Modules.Auth.Domain.Aggregates.UsuarioCliente", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Apellido")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("BloqueadoHasta")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CodigoVerificacionTelefono")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("Email");
+
+                    b.Property<bool>("EmailVerificado")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("IntentosFallidos")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime?>("ModificadoEn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<bool>("TelefonoVerificado")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TipoRegistro")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("TokenExpiraEn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TokenRestablecimiento")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("TokenRestablecimientoExpiraEn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TokenVerificacionEmail")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_UsuariosCliente_TenantId");
+
+                    b.HasIndex("Email", "TenantId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_UsuariosCliente_Email_TenantId")
+                        .HasFilter("[Email] IS NOT NULL");
+
+                    b.HasIndex("Telefono", "TenantId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_UsuariosCliente_Telefono_TenantId")
+                        .HasFilter("[Telefono] IS NOT NULL");
+
+                    b.ToTable("UsuariosCliente", "Auth");
+                });
+
             modelBuilder.Entity("CoreTemplate.Modules.Auth.Domain.Entities.CodigoRecuperacion2FA", b =>
                 {
                     b.Property<Guid>("Id")
@@ -409,6 +508,9 @@ namespace CoreTemplate.Modules.Auth.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Severidad")
+                        .HasColumnType("int");
 
                     b.Property<Guid?>("TenantId")
                         .HasColumnType("uniqueidentifier");
@@ -589,6 +691,43 @@ namespace CoreTemplate.Modules.Auth.Infrastructure.Migrations
 
                     b.Navigation("PasswordHash")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("CoreTemplate.Modules.Auth.Domain.Aggregates.UsuarioCliente", b =>
+                {
+                    b.OwnsMany("CoreTemplate.Modules.Auth.Domain.Aggregates.ProveedorOAuthVinculado", "Proveedores", b1 =>
+                        {
+                            b1.Property<Guid>("UsuarioClienteId")
+                                .HasColumnType("uniqueidentifier");
+
+                            b1.Property<string>("Proveedor")
+                                .HasColumnType("nvarchar(450)");
+
+                            b1.Property<string>("Email")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("nvarchar(200)");
+
+                            b1.Property<string>("ExternalId")
+                                .IsRequired()
+                                .HasMaxLength(200)
+                                .HasColumnType("nvarchar(200)");
+
+                            b1.Property<DateTime>("VinculadoEn")
+                                .HasColumnType("datetime2");
+
+                            b1.HasKey("UsuarioClienteId", "Proveedor");
+
+                            b1.HasIndex("Proveedor", "ExternalId")
+                                .HasDatabaseName("IX_UsuarioClienteProveedores_Proveedor_ExternalId");
+
+                            b1.ToTable("UsuarioClienteProveedores", "Auth");
+
+                            b1.WithOwner()
+                                .HasForeignKey("UsuarioClienteId");
+                        });
+
+                    b.Navigation("Proveedores");
                 });
 
             modelBuilder.Entity("CoreTemplate.Modules.Auth.Domain.Entities.CodigoRecuperacion2FA", b =>

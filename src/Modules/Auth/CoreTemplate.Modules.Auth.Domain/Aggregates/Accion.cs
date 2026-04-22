@@ -8,7 +8,7 @@ namespace CoreTemplate.Modules.Auth.Domain.Aggregates;
 /// Solo existe cuando AuthSettings:UseActionCatalog = true.
 /// Extiende el modelo de permisos con gestión centralizada y habilitación por canal.
 /// </summary>
-public sealed class Accion : AggregateRoot<Guid>
+public sealed class Accion : AggregateRoot<Guid>, IAuditable
 {
     /// <summary>Código único en formato Modulo.Recurso.Accion.</summary>
     public string Codigo { get; private set; } = string.Empty;
@@ -33,16 +33,24 @@ public sealed class Accion : AggregateRoot<Guid>
     public static Result<Accion> Crear(string codigo, string nombre, string modulo, string descripcion = "")
     {
         if (string.IsNullOrWhiteSpace(codigo))
+        {
             return Result<Accion>.Failure("El código de la acción es requerido.");
+        }
 
         if (!codigo.Contains('.'))
+        {
             return Result<Accion>.Failure("El código debe tener formato 'Modulo.Recurso.Accion'.");
+        }
 
         if (string.IsNullOrWhiteSpace(nombre))
+        {
             return Result<Accion>.Failure("El nombre de la acción es requerido.");
+        }
 
         if (string.IsNullOrWhiteSpace(modulo))
+        {
             return Result<Accion>.Failure("El módulo es requerido.");
+        }
 
         return Result<Accion>.Success(new Accion
         {
@@ -58,14 +66,22 @@ public sealed class Accion : AggregateRoot<Guid>
 
     public Result Activar()
     {
-        if (EsActiva) return Result.Failure("La acción ya está activa.");
+        if (EsActiva)
+        {
+            return Result.Failure("La acción ya está activa.");
+        }
+
         EsActiva = true;
         return Result.Success();
     }
 
     public Result Desactivar()
     {
-        if (!EsActiva) return Result.Failure("La acción ya está inactiva.");
+        if (!EsActiva)
+        {
+            return Result.Failure("La acción ya está inactiva.");
+        }
+
         EsActiva = false;
         return Result.Success();
     }

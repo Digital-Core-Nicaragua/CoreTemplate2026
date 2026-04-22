@@ -286,6 +286,23 @@
 
 ---
 
+## Portal de Clientes (`/api/portal`) — EnableCustomerPortal = true
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| POST | `/registro` | Registro con email + contraseña |
+| POST | `/registro/telefono` | Registro con teléfono (WhatsApp/SMS) |
+| POST | `/verificar-email` | Verificar email con token |
+| POST | `/verificar-telefono` | Verificar teléfono con OTP |
+| POST | `/login` | Login con email + contraseña |
+| POST | `/login/google` | Login con Google OAuth |
+| POST | `/login/facebook` | Login con Facebook OAuth |
+| POST | `/login/telefono` | Login con teléfono + OTP nuevo |
+| POST | `/refresh` | Renovar AccessToken |
+| POST | `/logout` | Cerrar sesión |
+
+---
+
 ## Formato de Respuesta Estándar
 
 ```json

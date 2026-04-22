@@ -1,3 +1,4 @@
+using CoreTemplate.Auditing.Interceptors;
 using CoreTemplate.Infrastructure.Persistence;
 using CoreTemplate.SharedKernel.Abstractions;
 using CoreTemplate.Infrastructure.Settings;
@@ -16,8 +17,9 @@ namespace CoreTemplate.Modules.Auth.Infrastructure.Persistence;
 public sealed class AuthDbContext(
     DbContextOptions<AuthDbContext> options,
     ICurrentTenant currentTenant,
-    IOptions<TenantSettings> tenantSettings)
-    : BaseDbContext(options, currentTenant, tenantSettings)
+    IOptions<TenantSettings> tenantSettings,
+    AuditSaveChangesInterceptor? auditInterceptor = null)
+    : BaseDbContext(options, currentTenant, tenantSettings, auditInterceptor)
 {
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<Rol> Roles => Set<Rol>();
@@ -28,6 +30,12 @@ public sealed class AuthDbContext(
     public DbSet<Accion> Acciones => Set<Accion>();
     public DbSet<ConfiguracionTenant> ConfiguracionesTenant => Set<ConfiguracionTenant>();
     public DbSet<RegistroAuditoria> RegistrosAuditoria => Set<RegistroAuditoria>();
+
+    /// <summary>
+    /// Clientes del portal externo.
+    /// Solo se usa cuando CustomerPortalSettings:EnableCustomerPortal = true.
+    /// </summary>
+    public DbSet<UsuarioCliente> UsuariosCliente => Set<UsuarioCliente>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

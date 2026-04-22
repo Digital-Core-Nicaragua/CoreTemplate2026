@@ -180,3 +180,55 @@ public interface IRegistroAuditoriaRepository
     /// <summary>Obtiene los registros de auditoría de un usuario (paginado).</summary>
     Task<PagedResult<RegistroAuditoria>> GetByUsuarioAsync(Guid usuarioId, int pagina, int tamanoPagina, CancellationToken ct = default);
 }
+
+/// <summary>
+/// Contrato del repositorio de clientes del portal.
+/// Solo se usa cuando <c>CustomerPortalSettings:EnableCustomerPortal = true</c>.
+/// </summary>
+public interface IUsuarioClienteRepository
+{
+    /// <summary>Obtiene un cliente por su ID.</summary>
+    Task<UsuarioCliente?> GetByIdAsync(Guid id, CancellationToken ct = default);
+
+    /// <summary>Obtiene un cliente por su email y tenant.</summary>
+    Task<UsuarioCliente?> GetByEmailAsync(string email, Guid? tenantId = null, CancellationToken ct = default);
+
+    /// <summary>Obtiene un cliente por su número de teléfono y tenant.</summary>
+    Task<UsuarioCliente?> GetByTelefonoAsync(string telefono, Guid? tenantId = null, CancellationToken ct = default);
+
+    /// <summary>Verifica si existe un cliente con el teléfono indicado en el tenant.</summary>
+    Task<bool> ExistsByTelefonoAsync(string telefono, Guid? tenantId = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// Obtiene un cliente por su ID externo en un proveedor OAuth.
+    /// Se usa para identificar al cliente cuando hace login con Google/Facebook.
+    /// </summary>
+    Task<UsuarioCliente?> GetByExternalIdAsync(
+        Enums.TipoProveedorOAuth proveedor,
+        string externalId,
+        Guid? tenantId = null,
+        CancellationToken ct = default);
+
+    /// <summary>Verifica si existe un cliente con el email indicado en el tenant.</summary>
+    Task<bool> ExistsByEmailAsync(string email, Guid? tenantId = null, CancellationToken ct = default);
+
+    /// <summary>
+    /// Obtiene un cliente por su token de restablecimiento de contraseña (válido y no expirado).
+    /// Retorna null si el token no existe o ya expiró.
+    /// </summary>
+    Task<UsuarioCliente?> GetByTokenRestablecimientoAsync(string token, Guid? tenantId = null, CancellationToken ct = default);
+
+    /// <summary>Obtiene una página de clientes con filtros opcionales.</summary>
+    Task<PagedResult<UsuarioCliente>> GetPagedAsync(
+        Guid? tenantId,
+        Enums.EstadoUsuarioCliente? estado = null,
+        int pagina = 1,
+        int tamanoPagina = 20,
+        CancellationToken ct = default);
+
+    /// <summary>Agrega un nuevo cliente y persiste los cambios.</summary>
+    Task AddAsync(UsuarioCliente cliente, CancellationToken ct = default);
+
+    /// <summary>Actualiza un cliente existente y persiste los cambios.</summary>
+    Task UpdateAsync(UsuarioCliente cliente, CancellationToken ct = default);
+}

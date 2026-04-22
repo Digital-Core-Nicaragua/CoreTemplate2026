@@ -7,7 +7,7 @@ namespace CoreTemplate.Modules.Auth.Domain.Aggregates;
 /// Aggregate que representa una sucursal o unidad organizacional.
 /// Solo existe cuando OrganizationSettings:EnableBranches = true.
 /// </summary>
-public sealed class Sucursal : AggregateRoot<Guid>
+public sealed class Sucursal : AggregateRoot<Guid>, IAuditable
 {
     /// <summary>ID del tenant al que pertenece.</summary>
     public Guid? TenantId { get; private set; }

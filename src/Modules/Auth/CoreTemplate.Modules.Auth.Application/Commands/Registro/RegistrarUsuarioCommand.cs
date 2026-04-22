@@ -7,7 +7,6 @@ using CoreTemplate.Modules.Auth.Domain.ValueObjects;
 using CoreTemplate.SharedKernel;
 using FluentValidation;
 using MediatR;
-using Microsoft.Extensions.Options;
 
 namespace CoreTemplate.Modules.Auth.Application.Commands.Registro;
 
@@ -38,8 +37,7 @@ internal sealed class RegistrarUsuarioCommandHandler(
     IUsuarioRepository _usuarioRepo,
     IRolRepository _rolRepo,
     IRegistroAuditoriaRepository _auditoriaRepo,
-    IPasswordService _passwordService,
-    IOptions<PasswordPolicySettings> _policy) : IRequestHandler<RegistrarUsuarioCommand, Result<Guid>>
+    IPasswordService _passwordService) : IRequestHandler<RegistrarUsuarioCommand, Result<Guid>>
 {
     public async Task<Result<Guid>> Handle(RegistrarUsuarioCommand cmd, CancellationToken ct)
     {

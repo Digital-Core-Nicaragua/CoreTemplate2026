@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
 using System.Text;
@@ -61,6 +62,22 @@ public static class DependencyInjection
         services.AddScoped<ISucursalRepository, SucursalRepository>();
         services.AddScoped<IAsignacionRolRepository, AsignacionRolRepository>();
         services.AddScoped<IAccionRepository, AccionRepository>();
+
+        // Portal de clientes — siempre registrado, el flag EnableCustomerPortal
+        // controla el comportamiento en runtime dentro de cada handler.
+        services.AddScoped<IUsuarioClienteRepository, UsuarioClienteRepository>();
+
+        // INotificacionClienteService — implementacion no-op por defecto (loguea el OTP en desarrollo).
+        // El sistema que use CoreTemplate puede sobreescribirla registrando su propia implementacion
+        // (Twilio, AWS SNS, etc.) ANTES de llamar a AddAuthModule().
+        services.TryAddScoped<INotificacionClienteService, NullNotificacionClienteService>();
+
+        // OAuth services — registrados directamente por tipo concreto.
+        // OAuthServiceFactory resuelve el correcto según el proveedor en runtime,
+        // evitando ambigüedad de múltiples implementaciones de IProveedorOAuthService.
+        services.AddHttpClient<FacebookOAuthService>();
+        services.AddScoped<GoogleOAuthService>();
+        services.AddScoped<IOAuthServiceFactory, OAuthServiceFactory>();
 
         // Servicios
         services.AddScoped<IJwtService, JwtService>();

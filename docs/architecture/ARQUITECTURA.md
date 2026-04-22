@@ -38,7 +38,7 @@ CoreTemplate implementa **Clean Architecture** combinada con **Domain-Driven Des
 - `Host` → todo (punto de composición)
 
 > **Regla crítica**: Ningún proyecto de `Application` referencia `CoreTemplate.Infrastructure`.
-> Los contratos (`ICurrentUser`, `ICurrentTenant`, `IDateTimeProvider`) viven en `Abstractions`.
+> Los contratos (`ICurrentUser`, `ICurrentTenant`, `IDateTimeProvider`) viven en `CoreTemplate.SharedKernel/Abstractions/`.
 > Las implementaciones viven en `Infrastructure`.
 
 ---
@@ -48,12 +48,13 @@ CoreTemplate implementa **Clean Architecture** combinada con **Domain-Driven Des
 ```
 BuildingBlocks/
   CoreTemplate.SharedKernel          → Result, PagedResult, AggregateRoot, Entity, ValueObject, IDomainEvent
-  CoreTemplate.Abstractions          → ICurrentUser, ICurrentTenant, ICurrentBranch, IDateTimeProvider  ← NUEVO
+                                        Abstractions/ → ICurrentUser, ICurrentTenant, ICurrentBranch, IDateTimeProvider
+                                        Domain/IAuditable → interfaz marcadora para auditoría automática
   CoreTemplate.Api.Common            → ApiResponse, BaseApiController, GlobalExceptionHandler, ValidationBehavior
-  CoreTemplate.Infrastructure        → BaseDbContext, implementaciones de Abstractions, configuración EF Core base
-  CoreTemplate.Auditing              → IAuditService, AuditLog, AuditSaveChangesInterceptor               ← NUEVO
-  CoreTemplate.Logging               → IAppLogger, ICorrelationContext, CorrelationMiddleware              ← NUEVO
-  CoreTemplate.Monitoring            → Health checks (DB, Redis), endpoints /health                       ← NUEVO
+  CoreTemplate.Infrastructure        → BaseDbContext, implementaciones de SharedKernel.Abstractions, configuración EF Core base
+  CoreTemplate.Auditing              → IAuditService, IAuditContext, AuditLog, AuditSaveChangesInterceptor, AuditDbContext
+  CoreTemplate.Logging               → IAppLogger, ICorrelationContext, CorrelationMiddleware
+  CoreTemplate.Monitoring            → Health checks (DB, Redis), endpoints /health
 
 Host/
   CoreTemplate.Api                   → Program.cs, appsettings, punto de entrada

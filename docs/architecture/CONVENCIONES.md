@@ -226,7 +226,7 @@ await _auditService.LogAsync(new AuditLog
 - **XML docs** en todas las clases y métodos públicos de SharedKernel y Api.Common
 - **No `DateTime.UtcNow` en Domain** — recibir el tiempo como parámetro desde Application
 - **No `ILogger<T>` en Application** — usar `IAppLogger` de `CoreTemplate.Logging`
-- **No referencia a `CoreTemplate.Infrastructure` desde Application** — usar `CoreTemplate.Abstractions`
+- **No referencia a `CoreTemplate.Infrastructure` desde Application** — usar contratos de `CoreTemplate.SharedKernel.Abstractions`
 
 ---
 

@@ -563,11 +563,12 @@ Ver [PLAN-MEJORAS-BUILDING-BLOCKS.md](docs/PLAN-MEJORAS-BUILDING-BLOCKS.md) para
 
 | Fase | Building Block | Estado |
 |---|---|---|
-| 1 | `CoreTemplate.Abstractions` | 🔧 Pendiente |
-| 2 | `CoreTemplate.Auditing` | 🔧 Pendiente |
-| 3 | `CoreTemplate.Logging` | 🔧 Pendiente |
-| 4 | `CoreTemplate.Monitoring` | 🔧 Pendiente |
-| 5 | `DependencyInjection` en capas Api | 🔧 Pendiente |
+| 1 | `CoreTemplate.Abstractions` | ✅ Implementado |
+| 2 | `CoreTemplate.Auditing` | ✅ Implementado |
+| 3 | `CoreTemplate.Logging` | ✅ Implementado |
+| 4 | `CoreTemplate.Monitoring` | ✅ Implementado |
+| 5 | `DependencyInjection` en capas Api | ✅ Implementado |
+| 25 | Registro por Teléfono / WhatsApp (Portal Clientes) | 🔧 Pendiente |
 
 ```mermaid
 flowchart LR

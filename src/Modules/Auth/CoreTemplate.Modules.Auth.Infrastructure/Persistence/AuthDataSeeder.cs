@@ -20,7 +20,9 @@ public static class AuthDataSeeder
         // Solo migrar si hay migraciones pendientes
         var pendientes = await db.Database.GetPendingMigrationsAsync();
         if (pendientes.Any())
+        {
             await db.Database.MigrateAsync();
+        }
 
         await SeedPermisosAsync(db);
         await SeedRolesAsync(db);
@@ -166,8 +168,15 @@ public static class AuthDataSeeder
     private static async Task SeedAccionesAsync(AuthDbContext db, IServiceProvider services)
     {
         // Solo ejecutar si la tabla Acciones existe en el modelo (UseActionCatalog = true)
-        if (db.Model.FindEntityType(typeof(Accion)) is null) return;
-        if (await db.Acciones.AnyAsync()) return;
+        if (db.Model.FindEntityType(typeof(Accion)) is null)
+        {
+            return;
+        }
+
+        if (await db.Acciones.AnyAsync())
+        {
+            return;
+        }
 
         var acciones = new[]
         {
@@ -188,7 +197,9 @@ public static class AuthDataSeeder
         {
             var result = Accion.Crear(codigo, nombre, modulo);
             if (result.IsSuccess)
+            {
                 await db.Acciones.AddAsync(result.Value!);
+            }
         }
 
         await db.SaveChangesAsync();

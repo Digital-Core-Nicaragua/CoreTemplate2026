@@ -156,4 +156,34 @@ internal sealed class JwtService(
         }
         catch { return null; }
     }
+
+    /// <inheritdoc/>
+    public string GenerarAccessTokenCliente(UsuarioCliente cliente)
+    {
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, cliente.Id.ToString()),
+            new(JwtRegisteredClaimNames.Email, cliente.Email ?? string.Empty),
+            new(JwtRegisteredClaimNames.Name, $"{cliente.Nombre} {cliente.Apellido}"),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            // Claim que distingue a los clientes del portal de los usuarios internos
+            new("tipo", "cliente"),
+            new("estado_cliente", cliente.Estado.ToString())
+        };
+
+        if (cliente.TenantId.HasValue)
+            claims.Add(new Claim("tenant_id", cliente.TenantId.Value.ToString()));
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authSettings.JwtSecretKey));
+        var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            issuer: _authSettings.JwtIssuer,
+            audience: _authSettings.JwtAudience,
+            claims: claims,
+            expires: ObtenerExpiracionAccessToken(),
+            signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
 }

@@ -19,6 +19,7 @@
     <PackageReference Include="Otp.NET" />
     <PackageReference Include="QRCoder" />
     <PackageReference Include="StackExchange.Redis" />
+    <PackageReference Include="Google.Apis.Auth" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />

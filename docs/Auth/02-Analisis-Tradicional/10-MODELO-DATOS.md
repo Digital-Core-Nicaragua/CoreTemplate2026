@@ -24,6 +24,8 @@
 | `Acciones` | Accion | UseActionCatalog |
 | `ConfiguracionesTenant` | ConfiguracionTenant | No |
 | `RegistrosAuditoria` | RegistroAuditoria | No |
+| `UsuariosCliente` | UsuarioCliente | EnableCustomerPortal |
+| `UsuarioClienteProveedores` | ProveedorOAuthVinculado (owned) | EnableCustomerPortal |
 
 ---
 
@@ -223,6 +225,47 @@ CREATE INDEX IX_RegistrosAuditoria_CreadoEn ON Auth.RegistrosAuditoria (CreadoEn
 
 ---
 
+## Tabla: UsuariosCliente (EnableCustomerPortal)
+
+```sql
+CREATE TABLE Auth.UsuariosCliente (
+    Id                              UNIQUEIDENTIFIER    NOT NULL PRIMARY KEY,
+    TenantId                        UNIQUEIDENTIFIER    NULL,
+    Email                           NVARCHAR(200)       NULL,       -- nullable: registro por teléfono
+    Telefono                        NVARCHAR(30)        NULL,       -- nullable: registro por email
+    TipoRegistro                    INT                 NOT NULL,   -- 1=Email, 2=Telefono, 3=OAuth
+    PasswordHash                    NVARCHAR(500)       NULL,
+    Nombre                          NVARCHAR(100)       NOT NULL,
+    Apellido                        NVARCHAR(100)       NOT NULL,
+    Estado                          NVARCHAR(MAX)       NOT NULL,
+    EmailVerificado                 BIT                 NOT NULL DEFAULT 0,
+    TelefonoVerificado              BIT                 NOT NULL DEFAULT 0,
+    TokenVerificacionEmail          NVARCHAR(100)       NULL,
+    CodigoVerificacionTelefono      NVARCHAR(10)        NULL,
+    TokenExpiraEn                   DATETIME2           NULL,
+    IntentosFallidos                INT                 NOT NULL DEFAULT 0,
+    BloqueadoHasta                  DATETIME2           NULL,
+    CreadoEn                        DATETIME2           NOT NULL,
+    ModificadoEn                    DATETIME2           NULL,
+    TokenRestablecimiento           NVARCHAR(100)       NULL,
+    TokenRestablecimientoExpiraEn   DATETIME2           NULL
+);
+
+-- Índice único filtrado: mismo email no puede repetirse en el mismo tenant
+CREATE UNIQUE INDEX IX_UsuariosCliente_Email_TenantId
+    ON Auth.UsuariosCliente (Email, TenantId)
+    WHERE Email IS NOT NULL;
+
+-- Índice único filtrado: mismo teléfono no puede repetirse en el mismo tenant
+CREATE UNIQUE INDEX IX_UsuariosCliente_Telefono_TenantId
+    ON Auth.UsuariosCliente (Telefono, TenantId)
+    WHERE Telefono IS NOT NULL;
+
+CREATE INDEX IX_UsuariosCliente_TenantId ON Auth.UsuariosCliente (TenantId);
+```
+
+---
+
 ## Migraciones EF Core
 
 | Migración | Descripción |
@@ -233,6 +276,7 @@ CREATE INDEX IX_RegistrosAuditoria_CreadoEn ON Auth.RegistrosAuditoria (CreadoEn
 | `Add_AsignacionesRol` | Tabla AsignacionesRol |
 | `Add_CatalogoAcciones` | Tabla Acciones |
 | `Add_ConfiguracionTenant` | Tabla ConfiguracionesTenant |
+| `Add_RegistroPorTelefono` | Columna Telefono indexada + TipoRegistro en UsuariosCliente, índice filtrado en Email |
 
 ---
 

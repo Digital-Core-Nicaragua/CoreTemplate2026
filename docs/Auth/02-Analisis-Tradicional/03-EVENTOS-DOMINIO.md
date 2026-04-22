@@ -48,6 +48,19 @@
 | `SucursalRemovidaEvent` | usuarioId, sucursalId | Al remover sucursal |
 | `TodasSesionesRevocadasEvent` | usuarioId | Al revocar todas las sesiones |
 
+### Aggregate: UsuarioCliente — Portal de Clientes (8 eventos)
+
+| Evento | Datos | Cuándo se dispara |
+|---|---|---|
+| `ClienteRegistradoEvent` | clienteId, email, nombre, tenantId | Al crear un nuevo cliente |
+| `ClienteEmailVerificadoEvent` | clienteId, email, tenantId | Al verificar el email |
+| `ClienteTelefonoVerificadoEvent` | clienteId, email, tenantId | Al verificar el teléfono |
+| `ClienteActivadoEvent` | clienteId, email, tenantId | Al pasar a estado `Active` |
+| `ClienteBloqueadoEvent` | clienteId, email, tenantId | Al bloquear un cliente |
+| `ClienteReactivadoEvent` | clienteId, email, tenantId | Al reactivar un cliente |
+| `ClienteProveedorVinculadoEvent` | clienteId, email, proveedor, tenantId | Al vincular proveedor OAuth |
+| `ClienteRegistradoPorTelefonoEvent` | clienteId, telefono, nombre, tenantId | Al registrarse por teléfono |
+
 ---
 
 ## Eventos Consumidos
@@ -62,6 +75,9 @@ CoreTemplate es una plantilla base sin integraciones entre módulos. Los eventos
 | `UsuarioBloqueadoEvent` | Notificar al usuario por email |
 | `PasswordCambiadoEvent` | Notificar al usuario por email |
 | `DosFactoresActivadoEvent` | Notificar al usuario por email |
+| `ClienteRegistradoEvent` | Enviar email de bienvenida / verificación |
+| `ClienteRegistradoPorTelefonoEvent` | Enviar OTP por WhatsApp/SMS (vía `INotificacionClienteService`) |
+| `ClienteBloqueadoEvent` | Notificar al cliente |
 
 ---
 

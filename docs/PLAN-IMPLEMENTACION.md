@@ -26,6 +26,9 @@
 | 11 | Script de renombrado | ✅ Completa |
 | 12 | Tests | ✅ Completa |
 | 13 | README final | ✅ Completa |
+| 23 | Building Blocks transversales (Auditing, Logging, Monitoring) | ✅ Completa |
+| 24 | Correcciones y limpieza | ✅ Completa |
+| 25 | Registro por Teléfono / WhatsApp en Portal de Clientes | 📋 Pendiente |
 
 ---
 
@@ -243,7 +246,7 @@
 
 ## FASE 12 — Tests ✅
 
-> Compilación verificada: ✅ 0 errores. Tests ejecutados: ✅ 90/90 pasan.
+> Compilación verificada: ✅ 0 errores. Tests ejecutados: ✅ 126/126 pasan.
 
 - [x] `SharedKernel.Tests/GlobalUsings.cs`
 - [x] `SharedKernel.Tests/ResultTests.cs` — 7 tests
@@ -515,8 +518,94 @@
 
 ---
 
-**Última actualización**: 2026-04-15
+## FASE 23 — Building Blocks transversales ✅
+
+> Compilación verificada: ✅ 0 errores. Tests: ✅ 126/126.
+
+### SharedKernel — Abstractions
+- [x] `Abstractions/ICurrentUser.cs`
+- [x] `Abstractions/ICurrentTenant.cs`
+- [x] `Abstractions/ICurrentBranch.cs`
+- [x] `Abstractions/IDateTimeProvider.cs`
+- [x] `Domain/IAuditable.cs` — interfaz marcadora para entidades auditables por el interceptor
+
+### CoreTemplate.Logging
+- [x] `Abstractions/IAppLogger.cs` — wrapper tipado sobre ILogger
+- [x] `Abstractions/ICorrelationContext.cs` — CorrelationId, TenantId, UserId por request
+- [x] `Middleware/CorrelationMiddleware.cs` — genera/propaga X-Correlation-Id
+- [x] `Services/AppLogger.cs` + `CorrelationContext.cs`
+- [x] `Configuration/LoggingExtensions.cs` — `AddCoreLogging()`
+- [x] `DependencyInjection.cs`
+
+### CoreTemplate.Auditing
+- [x] `Abstractions/IAuditService.cs` + `IAuditContext.cs`
+- [x] `Models/AuditLog.cs` + `AuditActionType.cs`
+- [x] `Interceptors/AuditSaveChangesInterceptor.cs` — filtra por `IAuditable`, registrado en `BaseDbContext`
+- [x] `Persistence/AuditDbContext.cs` — schema `Shared`, tabla `AuditLogs`
+- [x] `Persistence/AuditDbContextFactory.cs` — soporte para EF Tools
+- [x] `Services/AuditService.cs` + `AuditContext.cs`
+- [x] `DependencyInjection.cs` — `AddCoreAuditing()`
+- [x] `Migrations/InitialCreate_Audit`
+
+### CoreTemplate.Monitoring
+- [x] `HealthChecks/DatabaseHealthCheck.cs` + `RedisHealthCheck.cs`
+- [x] `Configuration/MonitoringExtensions.cs` — `AddCoreMonitoring()`, `UseHealthCheckEndpoints()`
+- [x] Endpoints: `/health`, `/health/ready`, `/health/live`
+- [x] `DependencyInjection.cs`
+
+### Infrastructure — actualizaciones
+- [x] `Persistence/BaseDbContext.cs` — recibe y registra `AuditSaveChangesInterceptor`
+- [x] `DependencyInjection.cs` — `AddInfrastructureBase()` registra Logging + Auditing + Monitoring
+
+---
+
+## FASE 24 — Correcciones y limpieza ✅
+
+> Compilación verificada: ✅ 0 errores. Tests: ✅ 126/126.
+
+- [x] `RegistrarUsuarioCommandHandler` — eliminado parámetro `IOptions<PasswordPolicySettings>` redundante (ya encapsulado en `IPasswordService.ValidarPolitica`)
+- [x] `RegistrarUsuarioCommandHandlerTests.cs` — actualizado para coincidir con constructor de 4 parámetros
+- [x] `.editorconfig` — `dotnet_style_require_accessibility_modifiers` cambiado de `always` a `for_non_interface_members` para eliminar falsos positivos en miembros de interfaz
+- [x] `Migrations/Add_SeveridadAuditoria` — migración aplicada al módulo Auth
+- [x] `Persistence/AuditDbContextFactory.cs` — creado para soporte de migraciones EF Tools en `CoreTemplate.Auditing`
+
+---
+
+**Última actualización**: 2026-05-28
 **Compilación**: ✅ Toda la solución — 0 errores
 **Tests**: ✅ 126/126
 **Estado general**:
-- ✅ Fases 0-22 — PROYECTO COMPLETO ✅
+- ✅ Fases 0-24 — PROYECTO COMPLETO ✅
+- 📋 Fase 25 — Registro por Teléfono/WhatsApp — Pendiente
+
+---
+
+## FASE 25 — Registro por Teléfono / WhatsApp en Portal de Clientes 📋
+
+> Depende de: Portal de Clientes implementado (aggregate `UsuarioCliente` existente)
+> Ver diseño completo en: `docs/PLAN-PORTAL-CLIENTES.md` — sección "Registro por Teléfono / WhatsApp"
+
+### Auth — Domain
+- [ ] `ValueObjects/Telefono.cs` — Value Object con validación E.164
+- [ ] `Enums/TipoRegistro.cs` — enum: `Email`, `Telefono`, `OAuth`
+- [ ] `Aggregates/UsuarioCliente.cs` — `Email` nullable, nuevo factory `CrearPorTelefono()`, validación al menos email o teléfono
+
+### Auth — Application
+- [ ] `Abstractions/INotificacionClienteService.cs` — contrato: `EnviarOtpWhatsAppAsync`, `EnviarOtpSmsAsync`
+- [ ] `Abstractions/CustomerPortalSettings.cs` — agregar `RegistroPorTelefono` (Enabled, Proveedor, OtpExpirationMinutes)
+- [ ] `Commands/RegistrarClienteCommand` — actualizar: email nullable, teléfono opcional
+- [ ] `Commands/RegistrarClientePorTelefonoCommand.cs` + Handler + Validator — NUEVO
+
+### Auth — Infrastructure
+- [ ] `Persistence/Configurations/UsuarioClienteConfiguration.cs` — Email nullable, índice filtrado `WHERE Email IS NOT NULL`, nuevo índice `IX_UsuariosCliente_Telefono_TenantId` filtrado `WHERE Telefono IS NOT NULL`
+- [ ] Migración: `Add_RegistroPorTelefono`
+
+### Auth — Api
+- [ ] `Controllers/PortalClientesController.cs` — agregar `POST /registro/telefono`, `POST /verificar-telefono`
+- [ ] `Contracts/PortalContracts.cs` — agregar `RegistrarClientePorTelefonoRequest`, `VerificarTelefonoRequest`
+
+### Documentación
+- [x] `docs/PLAN-PORTAL-CLIENTES.md` — sección "Registro por Teléfono / WhatsApp" agregada
+- [x] `docs/PLAN-IMPLEMENTACION.md` — Fase 25 agregada
+- [x] `docs/ALCANCE.md` — tabla de flags actualizada
+- [x] `README.md` — tabla de configuración del portal actualizada

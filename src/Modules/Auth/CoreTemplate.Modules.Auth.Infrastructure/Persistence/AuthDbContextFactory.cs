@@ -66,7 +66,9 @@ public sealed class AuthDbContextFactory : IDesignTimeDbContextFactory<AuthDbCon
         foreach (var path in candidates)
         {
             if (File.Exists(Path.Combine(path, "appsettings.json")))
+            {
                 return path;
+            }
         }
 
         return Directory.GetCurrentDirectory();

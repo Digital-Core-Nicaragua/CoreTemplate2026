@@ -1,6 +1,6 @@
 # Plan de Mejoras — Building Blocks Transversales
 
-**Estado**: Pendiente de implementación  
+**Estado**: ✅ Implementado  
 **Prioridad**: Alta  
 **Impacto**: Afecta toda la arquitectura — aplicar antes de crear nuevos módulos
 
@@ -33,7 +33,7 @@ src/BuildingBlocks/
 
 ---
 
-## Fase 1 — Mover contratos a SharedKernel (sin cambios de infraestructura)
+## Fase 1 — Mover contratos a SharedKernel ✅ Implementado
 
 **Objetivo**: Mover los contratos de contexto fuera de Infrastructure, al lugar correcto según el patrón de LunaERP.
 
@@ -72,11 +72,11 @@ Api         → Application + SharedKernel + Api.Common
 
 ---
 
-## Fase 2 — CoreTemplate.Auditing
+## Fase 2 — CoreTemplate.Auditing ✅ Implementado
 
 **Objetivo**: Registro automático de cambios en entidades y acciones de usuario.
 
-**Componentes**:
+**Componentes implementados**:
 ```
 CoreTemplate.Auditing/
   Abstractions/
@@ -87,13 +87,20 @@ CoreTemplate.Auditing/
     AuditActionType.cs       → enum: Created, Updated, Deleted, Login, Logout, etc.
   Interceptors/
     AuditSaveChangesInterceptor.cs  → EF Core interceptor — captura automáticamente cambios
+                                       Solo audita entidades que implementen IAuditable
   Persistence/
-    AuditDbContextExtensions.cs    → configura tabla AuditLogs en cualquier DbContext
+    AuditDbContext.cs        → DbContext dedicado — tabla Shared.AuditLogs
+    AuditDbContextFactory.cs → IDesignTimeDbContextFactory para EF Tools (migraciones)
   Services/
-    AuditService.cs          → implementación que persiste en BD
+    AuditService.cs          → implementación que persiste en Shared.AuditLogs
+    AuditContext.cs          → implementación de IAuditContext — resuelve datos del HttpContext
   DependencyInjection.cs
   CoreTemplate.Auditing.csproj
 ```
+
+> Nota: El plan original mencionaba `AuditDbContextExtensions.cs`. La implementación usa un
+> `AuditDbContext` dedicado — más limpio y con soporte completo de migraciones EF Core.
+> Migración generada: `InitialCreate_Audit` — tabla `Shared.AuditLogs`.
 
 **Diseño del modelo**:
 ```csharp
@@ -121,7 +128,7 @@ El interceptor `AuditSaveChangesInterceptor` se registra en `BaseDbContext` y ca
 
 ---
 
-## Fase 3 — CoreTemplate.Logging
+## Fase 3 — CoreTemplate.Logging ✅ Implementado
 
 **Objetivo**: Logging estructurado con correlación por request.
 
@@ -169,7 +176,7 @@ public interface IAppLogger
 
 ---
 
-## Fase 4 — CoreTemplate.Monitoring
+## Fase 4 — CoreTemplate.Monitoring ✅ Implementado
 
 **Objetivo**: Health checks para DB, Redis y dependencias externas + endpoint `/health`.
 
@@ -205,7 +212,7 @@ GET /health/live     → para Kubernetes liveness probe
 
 ---
 
-## Fase 5 — DependencyInjection en capas Api de módulos
+## Fase 5 — DependencyInjection en capas Api de módulos ✅ Implementado
 
 **Objetivo**: Encapsular el registro de cada módulo — `Program.cs` solo llama `AddAuthModule()`.
 
@@ -293,13 +300,13 @@ Infrastructure (implementaciones de SharedKernel.Abstractions)
 
 ## Métricas de éxito
 
-- [ ] Ningún módulo de `Application` referencia `CoreTemplate.Infrastructure`
-- [ ] Cero ocurrencias de `DateTime.UtcNow` en proyectos de `Domain`
-- [ ] `dotnet test` pasa con 0 fallos tras todos los cambios
-- [ ] `/health` retorna 200 con todos los checks en `Healthy`
-- [ ] Todos los requests tienen `X-Correlation-Id` en respuesta
-- [ ] `AuditLogs` se populan al crear/modificar/eliminar entidades
+- [x] Ningún módulo de `Application` referencia `CoreTemplate.Infrastructure`
+- [ ] Cero ocurrencias de `DateTime.UtcNow` en proyectos de `Domain` *(pendiente de verificar)*
+- [x] `dotnet test` pasa con 0 fallos tras todos los cambios
+- [x] `/health` retorna 200 con todos los checks en `Healthy`
+- [x] Todos los requests tienen `X-Correlation-Id` en respuesta
+- [x] `AuditLogs` se populan al crear/modificar/eliminar entidades
 
 ---
 
-*Documento creado como guía de implementación. Actualizar estado de cada fase al completar.*
+*Documento actualizado para reflejar implementación completada. Todas las fases están implementadas.*

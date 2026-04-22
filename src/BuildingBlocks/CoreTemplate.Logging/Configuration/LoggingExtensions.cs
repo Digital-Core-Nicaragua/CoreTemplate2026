@@ -10,8 +10,8 @@ namespace CoreTemplate.Logging.Configuration;
 public static class LoggingExtensions
 {
     /// <summary>
-    /// Configura Serilog en el host con enrichers automaticos:
-    /// MachineName, Environment, ProcessId, ThreadId.
+    /// Configura Serilog en el host con enrichers automaticos y escritura a consola y archivo.
+    /// Los logs se guardan en logs/app-YYYYMMDD.log con rotacion diaria.
     /// </summary>
     public static IHostBuilder UseCorrelationLogging(this IHostBuilder hostBuilder) =>
         hostBuilder.UseSerilog((ctx, lc) => lc
@@ -21,7 +21,14 @@ public static class LoggingExtensions
             .Enrich.WithEnvironmentName()
             .Enrich.WithProcessId()
             .Enrich.WithThreadId()
-            .WriteTo.Console());
+            .WriteTo.Console(
+                outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+            .WriteTo.File(
+                path: "logs/app-.log",
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 7,
+                outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
+                shared: true));
 
     /// <summary>
     /// Agrega el middleware de correlacion al pipeline HTTP.

@@ -99,3 +99,49 @@ public record SucursalAsignadaEvent(
 public record SucursalRemovidaEvent(
     Guid UsuarioId,
     Guid SucursalId) : IDomainEvent;
+
+// ─── Portal de Clientes ───────────────────────────────────────────────────────
+
+/// <summary>Se dispara cuando un nuevo cliente se registra en el portal.</summary>
+public record ClienteRegistradoEvent(
+    Guid ClienteId,
+    string Email,
+    string Nombre,
+    Guid? TenantId) : IDomainEvent;
+
+/// <summary>Se dispara cuando un cliente verifica su email.</summary>
+public record ClienteEmailVerificadoEvent(
+    Guid ClienteId,
+    string Email,
+    Guid? TenantId) : IDomainEvent;
+
+/// <summary>Se dispara cuando un cliente verifica su teléfono.</summary>
+public record ClienteTelefonoVerificadoEvent(
+    Guid ClienteId,
+    string Email,
+    Guid? TenantId) : IDomainEvent;
+
+/// <summary>Se dispara cuando un cliente pasa a estado Active (acceso completo al portal).</summary>
+public record ClienteActivadoEvent(
+    Guid ClienteId,
+    string Email,
+    Guid? TenantId) : IDomainEvent;
+
+/// <summary>Se dispara cuando un cliente es bloqueado (por admin o por intentos fallidos).</summary>
+public record ClienteBloqueadoEvent(
+    Guid ClienteId,
+    string Email,
+    Guid? TenantId) : IDomainEvent;
+
+/// <summary>Se dispara cuando un admin reactiva un cliente bloqueado.</summary>
+public record ClienteReactivadoEvent(
+    Guid ClienteId,
+    string Email,
+    Guid? TenantId) : IDomainEvent;
+
+/// <summary>Se dispara cuando un cliente vincula un proveedor OAuth adicional.</summary>
+public record ClienteProveedorVinculadoEvent(
+    Guid ClienteId,
+    string Email,
+    CoreTemplate.Modules.Auth.Domain.Enums.TipoProveedorOAuth Proveedor,
+    Guid? TenantId) : IDomainEvent;

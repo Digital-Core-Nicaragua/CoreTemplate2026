@@ -89,6 +89,9 @@ Servicio de infraestructura que extrae el usuario autenticado del JWT del reques
 ### IntentosFallidos
 Contador de intentos de login incorrectos consecutivos. Se resetea con login exitoso o desbloqueo.
 
+### INotificacionClienteService
+Contrato que define el envío de OTP por WhatsApp o SMS para el registro por teléfono. CoreTemplate define la interfaz; cada sistema implementa el proveedor (Twilio, AWS SNS, etc.).
+
 ### ISesionService
 Domain service que implementa la lógica de límites de sesiones simultáneas con jerarquía Tenant → Global → Default.
 
@@ -170,6 +173,9 @@ Sucursal por defecto de un usuario. Se usa al generar el JWT inicial.
 ---
 
 ## T
+
+### TipoRegistro
+Enum del portal de clientes que indica cómo se registró un `UsuarioCliente`: `Email` (email + contraseña), `Telefono` (WhatsApp/SMS + OTP), `OAuth` (proveedor externo).
 
 ### TipoUsuario
 Enum que clasifica el tipo de usuario: `Humano` (persona real), `Sistema` (servicio interno), `Integracion` (API externa). Determina comportamiento diferenciado en autenticación.

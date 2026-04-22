@@ -34,6 +34,12 @@ public interface IJwtService
 
     /// <summary>Extrae la fecha de expiración de un token sin validar su firma.</summary>
     DateTime? ExtraerExpiracion(string token);
+
+    /// <summary>
+    /// Genera un AccessToken JWT para un cliente del portal externo.
+    /// Incluye el claim "tipo" = "cliente" para distinguirlo de los usuarios internos.
+    /// </summary>
+    string GenerarAccessTokenCliente(UsuarioCliente cliente);
 }
 
 /// <summary>
@@ -111,3 +117,41 @@ public interface ISesionService
     /// <returns>True si se puede crear la nueva sesión. False si debe bloquearse.</returns>
     Task<bool> VerificarYAplicarLimiteAsync(Guid usuarioId, TipoUsuario tipoUsuario, CancellationToken ct = default);
 }
+
+/// <summary>
+/// Contrato para validar tokens de proveedores OAuth externos.
+/// <para>
+/// Cada proveedor (Google, Facebook) tiene su propia implementación.
+/// El frontend obtiene el token del proveedor y lo envía al backend.
+/// El backend lo valida aquí sin que el token externo salga del handler.
+/// </para>
+/// </summary>
+public interface IProveedorOAuthService
+{
+    /// <summary>
+    /// Valida el token externo con el proveedor y retorna los datos del usuario.
+    /// </summary>
+    /// <param name="token">idToken (Google) o accessToken (Facebook) obtenido por el frontend.</param>
+    /// <param name="ct">Token de cancelación.</param>
+    /// <returns>Datos del usuario si el token es válido, null si es inválido.</returns>
+    Task<OAuthUsuarioInfo?> ValidarTokenAsync(string token, CancellationToken ct = default);
+}
+
+/// <summary>
+/// Factory que resuelve el IProveedorOAuthService correcto según el tipo de proveedor.
+/// Permite que el handler no dependa de Infrastructure ni de keyed services.
+/// </summary>
+public interface IOAuthServiceFactory
+{
+    /// <summary>Retorna el servicio OAuth correspondiente al proveedor indicado.</summary>
+    IProveedorOAuthService Resolver(TipoProveedorOAuth proveedor);
+}
+public sealed record OAuthUsuarioInfo(
+    /// <summary>ID único del usuario en el proveedor externo.</summary>
+    string ExternalId,
+    /// <summary>Email verificado del usuario.</summary>
+    string Email,
+    /// <summary>Nombre del usuario.</summary>
+    string Nombre,
+    /// <summary>Apellido del usuario. Puede estar vacío según el proveedor.</summary>
+    string Apellido);

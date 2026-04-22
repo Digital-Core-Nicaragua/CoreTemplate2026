@@ -34,7 +34,9 @@ public sealed class AccionesController(IMediator _mediator) : BaseApiController
             new CrearAccionCommand(request.Codigo, request.Nombre, request.Modulo, request.Descripcion ?? ""), ct);
 
         if (!result.IsSuccess)
+        {
             return ConflictResponse<Guid>(result.Errors);
+        }
 
         return SuccessResponse(result.Value!, result.Message);
     }
@@ -46,9 +48,11 @@ public sealed class AccionesController(IMediator _mediator) : BaseApiController
         var result = await _mediator.Send(new ActivarAccionCommand(id), ct);
 
         if (!result.IsSuccess)
+        {
             return result.Error!.Contains("no fue encontrada")
                 ? NotFoundResponse<object>(result.Error!)
                 : ConflictResponse<object>(result.Error!);
+        }
 
         return SuccessResponse(true, CommonSuccessMessages.ActivadoExitosamente);
     }
@@ -60,9 +64,11 @@ public sealed class AccionesController(IMediator _mediator) : BaseApiController
         var result = await _mediator.Send(new DesactivarAccionCommand(id), ct);
 
         if (!result.IsSuccess)
+        {
             return result.Error!.Contains("no fue encontrada")
                 ? NotFoundResponse<object>(result.Error!)
                 : ConflictResponse<object>(result.Error!);
+        }
 
         return SuccessResponse(true, CommonSuccessMessages.DesactivadoExitosamente);
     }

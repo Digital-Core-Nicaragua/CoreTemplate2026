@@ -18,7 +18,7 @@ namespace CoreTemplate.Modules.Auth.Domain.Aggregates;
 /// La capa de Infrastructure genera el hash y lo pasa como <see cref="PasswordHash"/>.
 /// </para>
 /// </summary>
-public sealed class Usuario : AggregateRoot<Guid>
+public sealed class Usuario : AggregateRoot<Guid>, IAuditable
 {
     /// <summary>ID del tenant al que pertenece. Null si single-tenant.</summary>
     public Guid? TenantId { get; private set; }

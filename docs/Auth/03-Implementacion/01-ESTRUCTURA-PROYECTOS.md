@@ -82,7 +82,8 @@ src/Modules/Auth/
 │   │   ├── Add_Sucursales
 │   │   ├── Add_AsignacionesRol
 │   │   ├── Add_CatalogoAcciones
-│   │   └── Add_ConfiguracionTenant
+│   │   ├── Add_ConfiguracionTenant
+│   │   └── Add_SeveridadAuditoria
 │   ├── Persistence/
 │   │   ├── Configurations/
 │   │   │   ├── UsuarioConfiguration.cs

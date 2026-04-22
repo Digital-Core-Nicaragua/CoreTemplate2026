@@ -50,8 +50,8 @@ dotnet_style_qualification_for_event = false:warning
 dotnet_style_predefined_type_for_locals_parameters_members = true:warning
 dotnet_style_predefined_type_for_member_access = true:warning
 
-# Modificadores de acceso explícitos siempre
-dotnet_style_require_accessibility_modifiers = always:warning
+# Modificadores de acceso explícitos en clases/structs/enums (no en interfaces)
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
 
 # Readonly en campos que no cambian
 dotnet_style_readonly_field = true:suggestion

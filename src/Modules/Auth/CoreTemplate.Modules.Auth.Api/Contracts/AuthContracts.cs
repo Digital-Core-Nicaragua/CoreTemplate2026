@@ -93,3 +93,70 @@ public sealed record CrearAccionRequest(
 /// <summary>Request para configurar el límite de sesiones de un tenant.</summary>
 public sealed record ConfigurarLimiteSesionesRequest(
     int? MaxSesionesSimultaneas);
+
+// ─── Portal de Clientes ───────────────────────────────────────────────────────
+
+/// <summary>Request para registrar un nuevo cliente en el portal.</summary>
+public sealed record RegistrarClienteRequest(
+    string Email,
+    string Password,
+    string Nombre,
+    string Apellido,
+    string? Telefono = null);
+
+/// <summary>Request para login de cliente con email y contraseña.</summary>
+public sealed record LoginClienteRequest(
+    string Email,
+    string Password);
+
+/// <summary>Request para login de cliente mediante token OAuth externo.</summary>
+public sealed record LoginClienteOAuthRequest(
+    Domain.Enums.TipoProveedorOAuth Proveedor,
+    string Token);
+
+/// <summary>Request para verificar el email del cliente.</summary>
+public sealed record VerificarEmailClienteRequest(
+    string Token);
+
+/// <summary>Request para verificar el teléfono del cliente.</summary>
+public sealed record VerificarTelefonoClienteRequest(
+    string Codigo);
+
+/// <summary>Request para cambiar la contraseña del cliente autenticado.</summary>
+public sealed record CambiarPasswordClienteRequest(
+    string PasswordActual,
+    string NuevoPassword);
+
+/// <summary>Request para renovar el AccessToken del cliente.</summary>
+public sealed record RefreshTokenClienteRequest(
+    string RefreshToken);
+
+/// <summary>Request para cerrar la sesión del cliente.</summary>
+public sealed record LogoutClienteRequest(
+    string RefreshToken);
+
+/// <summary>Request para solicitar restablecimiento de contraseña del cliente.</summary>
+public sealed record SolicitarRestablecimientoClienteRequest(
+    string Email);
+
+/// <summary>Request para restablecer la contraseña del cliente con el token recibido por email.</summary>
+public sealed record RestablecerPasswordClienteRequest(
+    string Token,
+    string NuevoPassword);
+
+// --- Portal Clientes: Telefono ---
+
+/// <summary>Request para registrar un cliente por numero de telefono.</summary>
+public sealed record RegistrarClientePorTelefonoRequest(
+    string Telefono,
+    string Nombre,
+    string Apellido);
+
+/// <summary>Request para solicitar OTP de login por telefono.</summary>
+public sealed record SolicitarOtpTelefonoRequest(
+    string Telefono);
+
+/// <summary>Request para verificar OTP recibido por WhatsApp/SMS.</summary>
+public sealed record VerificarOtpTelefonoRequest(
+    string Telefono,
+    string Codigo);

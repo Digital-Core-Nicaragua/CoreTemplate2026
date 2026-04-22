@@ -11,7 +11,7 @@
     <!-- EF Core -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5" />
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.5" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5" />
 
@@ -47,6 +47,9 @@
 
     <!-- 2FA / TOTP -->
     <PackageVersion Include="Otp.NET" Version="1.4.0" />
+
+    <!-- OAuth -->
+    <PackageVersion Include="Google.Apis.Auth" Version="1.68.0" />
 
     <!-- QR Code para 2FA -->
     <PackageVersion Include="QRCoder" Version="1.6.0" />

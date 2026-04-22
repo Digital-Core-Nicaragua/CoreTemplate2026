@@ -1,6 +1,7 @@
 using System.Text.Json;
 using CoreTemplate.Auditing.Abstractions;
 using CoreTemplate.Auditing.Models;
+using CoreTemplate.SharedKernel.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
@@ -41,6 +42,10 @@ public sealed class AuditSaveChangesInterceptor(IAuditContext auditContext) : Sa
         foreach (var entry in context.ChangeTracker.Entries())
         {
             if (entry.State is not (EntityState.Added or EntityState.Modified or EntityState.Deleted))
+                continue;
+
+            // Solo auditar entidades que implementen IAuditable
+            if (entry.Entity is not IAuditable)
                 continue;
 
             var accion = entry.State switch

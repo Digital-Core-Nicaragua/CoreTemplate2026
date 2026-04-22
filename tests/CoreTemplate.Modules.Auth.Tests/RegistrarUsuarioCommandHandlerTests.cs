@@ -2,7 +2,6 @@ using CoreTemplate.Modules.Auth.Application.Abstractions;
 using CoreTemplate.Modules.Auth.Application.Commands.Registro;
 using CoreTemplate.Modules.Auth.Domain.Repositories;
 using FluentAssertions;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 
 namespace CoreTemplate.Modules.Auth.Tests;
@@ -13,17 +12,9 @@ public sealed class RegistrarUsuarioCommandHandlerTests
     private readonly IRolRepository _rolRepo = Substitute.For<IRolRepository>();
     private readonly IRegistroAuditoriaRepository _auditoriaRepo = Substitute.For<IRegistroAuditoriaRepository>();
     private readonly IPasswordService _passwordService = Substitute.For<IPasswordService>();
-    private readonly IOptions<PasswordPolicySettings> _policy = Options.Create(new PasswordPolicySettings
-    {
-        MinLength = 8,
-        RequireUppercase = true,
-        RequireLowercase = true,
-        RequireDigit = true,
-        RequireSpecialChar = false
-    });
 
     private RegistrarUsuarioCommandHandler CrearHandler() => new(
-        _usuarioRepo, _rolRepo, _auditoriaRepo, _passwordService, _policy);
+        _usuarioRepo, _rolRepo, _auditoriaRepo, _passwordService);
 
     [Fact]
     public async Task Handle_DatosValidos_DebeRegistrarUsuario()

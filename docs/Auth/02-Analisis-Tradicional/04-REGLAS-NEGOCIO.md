@@ -118,6 +118,22 @@ Cuando `EnableBranches = true`, el JWT incluye el claim `branch_id` con la sucur
 
 ---
 
+## Portal de Clientes (4 reglas)
+
+### RN-AUTH-031: Al Menos Email o Teléfono Requerido
+Un `UsuarioCliente` debe tener al menos email o teléfono. No pueden estar ambos ausentes. Se valida en los factory methods del aggregate.
+
+### RN-AUTH-032: Unicidad de Email y Teléfono por Tenant
+Email y teléfono son únicos por tenant de forma independiente. Se implementan como índices filtrados (`WHERE Email IS NOT NULL`, `WHERE Telefono IS NOT NULL`) para permitir nulls.
+
+### RN-AUTH-033: OTP de Teléfono de Un Solo Uso
+El código OTP generado para registro o login por teléfono expira en `OtpExpirationMinutes` (default: 10 min) y se invalida al usarse. No puede reutilizarse.
+
+### RN-AUTH-034: Registro por Teléfono Requiere Flag Habilitado
+El endpoint `POST /api/portal/registro/telefono` solo está disponible cuando `CustomerPortalSettings:RegistroPorTelefono:Enabled = true`. Si está deshabilitado, retorna 404.
+
+---
+
 ## Resumen
 
 | Bounded Context | Reglas |
@@ -126,7 +142,8 @@ Cuando `EnableBranches = true`, el JWT incluye el claim `branch_id` con la sucur
 | Sesiones | 8 |
 | Authorization | 6 |
 | Sucursales | 4 |
-| **Total** | **30** |
+| Portal de Clientes | 4 |
+| **Total** | **34** |
 
 ---
 

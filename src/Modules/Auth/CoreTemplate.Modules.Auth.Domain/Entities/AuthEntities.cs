@@ -202,6 +202,9 @@ public sealed class RegistroAuditoria : Entity<Guid>
     /// <summary>Tipo de evento registrado.</summary>
     public EventoAuditoria Evento { get; private set; }
 
+    /// <summary>Nivel de severidad del evento.</summary>
+    public SeveridadAuditoria Severidad { get; private set; }
+
     /// <summary>IP de origen de la solicitud.</summary>
     public string Ip { get; private set; } = string.Empty;
 
@@ -230,9 +233,22 @@ public sealed class RegistroAuditoria : Entity<Guid>
         UsuarioId = usuarioId,
         Email = email,
         Evento = evento,
+        Severidad = ResolverSeveridad(evento),
         Ip = ip,
         UserAgent = userAgent,
         Detalle = detalle,
         CreadoEn = DateTime.UtcNow
+    };
+
+    private static SeveridadAuditoria ResolverSeveridad(EventoAuditoria evento) => evento switch
+    {
+        EventoAuditoria.LoginFallido         => SeveridadAuditoria.Alta,
+        EventoAuditoria.DosFactoresFallido   => SeveridadAuditoria.Alta,
+        EventoAuditoria.CuentaBloqueada      => SeveridadAuditoria.Critica,
+        EventoAuditoria.DosFactoresDesactivado => SeveridadAuditoria.Media,
+        EventoAuditoria.RestablecimientoSolicitado => SeveridadAuditoria.Media,
+        EventoAuditoria.RestablecimientoCompletado => SeveridadAuditoria.Media,
+        EventoAuditoria.DosFactoresActivado  => SeveridadAuditoria.Media,
+        _                                    => SeveridadAuditoria.Info
     };
 }

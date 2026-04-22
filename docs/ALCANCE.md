@@ -156,6 +156,7 @@ Catálogo de ejemplo completamente implementado como patrón reutilizable:
 - Integraciones con servicios externos (pagos, email, SMS) — solo contratos/interfaces
 - Frontend
 - Portal de clientes (UsuarioCliente con OAuth) — demasiado específico
+- Implementación de proveedor de WhatsApp/SMS (Twilio, AWS SNS, etc.) — cada sistema elige su proveedor
 
 ---
 

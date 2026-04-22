@@ -12,7 +12,7 @@ namespace CoreTemplate.Modules.Auth.Domain.Aggregates;
 /// Los roles de sistema (<see cref="EsSistema"/> = true) no pueden eliminarse.
 /// </para>
 /// </summary>
-public sealed class Rol : AggregateRoot<Guid>
+public sealed class Rol : AggregateRoot<Guid>, IAuditable
 {
     /// <summary>ID del tenant al que pertenece. Null si es un rol global del sistema.</summary>
     public Guid? TenantId { get; private set; }

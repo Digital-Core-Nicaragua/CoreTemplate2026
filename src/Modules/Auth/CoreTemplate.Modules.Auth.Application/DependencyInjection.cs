@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.Configure<LockoutSettings>(configuration.GetSection(LockoutSettings.SectionName));
         services.Configure<PasswordPolicySettings>(configuration.GetSection(PasswordPolicySettings.SectionName));
         services.Configure<OrganizationSettings>(configuration.GetSection(OrganizationSettings.SectionName));
+        services.Configure<CustomerPortalSettings>(configuration.GetSection(CustomerPortalSettings.SectionName));
 
         return services;
     }
