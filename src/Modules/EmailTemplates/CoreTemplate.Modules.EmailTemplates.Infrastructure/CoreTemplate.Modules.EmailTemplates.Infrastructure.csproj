@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Copiar templates HTML al directorio de salida -->
+    <Content Include="Templates\**\*.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>Templates\Email\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoreTemplate.Modules.EmailTemplates.Application\CoreTemplate.Modules.EmailTemplates.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\CoreTemplate.Infrastructure\CoreTemplate.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\CoreTemplate.Email\CoreTemplate.Email.csproj" />
+  </ItemGroup>
+
+</Project>

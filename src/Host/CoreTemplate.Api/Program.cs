@@ -6,6 +6,8 @@ using CoreTemplate.Monitoring.Configuration;
 using CoreTemplate.Modules.Auth.Infrastructure;
 using CoreTemplate.Modules.Auth.Infrastructure.Middleware;
 using CoreTemplate.Modules.Catalogos.Infrastructure;
+using CoreTemplate.Modules.Archivos.Infrastructure;
+using CoreTemplate.Modules.EmailTemplates.Infrastructure;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
@@ -28,7 +30,9 @@ try
     // Controllers + modulos
     builder.Services.AddControllers()
         .AddApplicationPart(typeof(CoreTemplate.Modules.Auth.Api.Controllers.AuthController).Assembly)
-        .AddApplicationPart(typeof(CoreTemplate.Modules.Catalogos.Api.Controllers.CatalogosController).Assembly);
+        .AddApplicationPart(typeof(CoreTemplate.Modules.Catalogos.Api.Controllers.CatalogosController).Assembly)
+        .AddApplicationPart(typeof(CoreTemplate.Modules.EmailTemplates.Api.Controllers.EmailTemplatesController).Assembly)
+        .AddApplicationPart(typeof(CoreTemplate.Modules.Archivos.Api.Controllers.ArchivosController).Assembly);
 
     // Infraestructura base (incluye Logging, Auditing, Monitoring)
     builder.Services.AddInfrastructureBase(builder.Configuration);
@@ -42,6 +46,12 @@ try
 
     // Modulo Catalogos
     builder.Services.AddCatalogosModule(builder.Configuration);
+
+    // Modulo EmailTemplates (incluye building block Email)
+    builder.Services.AddEmailTemplatesModule(builder.Configuration);
+
+    // Modulo Archivos (incluye building block Storage)
+    builder.Services.AddArchivosModule(builder.Configuration);
 
     // Swagger con soporte JWT
     builder.Services.AddEndpointsApiExplorer();
@@ -78,6 +88,22 @@ try
     var app = builder.Build();
 
     app.UseExceptionHandler();
+
+    // Servir archivos estáticos del storage local (igual que Rancho Santana)
+    var storagePath = builder.Configuration["LocalStorageSettings:BasePath"] ?? "archivos";
+    var storageRequestPath = builder.Configuration["LocalStorageSettings:RequestPath"] ?? "/archivos";
+    var storageFullPath = Path.IsPathRooted(storagePath)
+        ? storagePath
+        : Path.Combine(Directory.GetCurrentDirectory(), storagePath);
+
+    if (!Directory.Exists(storageFullPath))
+        Directory.CreateDirectory(storageFullPath);
+
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(storageFullPath),
+        RequestPath = storageRequestPath
+    });
 
     if (app.Environment.IsDevelopment())
     {

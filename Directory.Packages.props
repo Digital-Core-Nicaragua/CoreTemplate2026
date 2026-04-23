@@ -51,6 +51,12 @@
     <!-- OAuth -->
     <PackageVersion Include="Google.Apis.Auth" Version="1.68.0" />
 
+    <!-- Email -->
+    <PackageVersion Include="Mailjet.Api" Version="4.0.0" />
+
+    <!-- Storage -->
+    <PackageVersion Include="AWSSDK.S3" Version="4.0.22" />
+
     <!-- QR Code para 2FA -->
     <PackageVersion Include="QRCoder" Version="1.6.0" />
 

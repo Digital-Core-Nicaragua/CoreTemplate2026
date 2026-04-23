@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoreTemplate.Modules.EmailTemplates.Application\CoreTemplate.Modules.EmailTemplates.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\CoreTemplate.Api.Common\CoreTemplate.Api.Common.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\CoreTemplate.SharedKernel\CoreTemplate.SharedKernel.csproj" />
+  </ItemGroup>
+
+</Project>

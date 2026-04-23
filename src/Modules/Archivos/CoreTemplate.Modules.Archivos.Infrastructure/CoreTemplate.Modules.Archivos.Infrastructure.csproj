@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoreTemplate.Modules.Archivos.Application\CoreTemplate.Modules.Archivos.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\CoreTemplate.Infrastructure\CoreTemplate.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\CoreTemplate.Storage\CoreTemplate.Storage.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,5 +1,6 @@
 using CoreTemplate.Modules.Auth.Infrastructure.Persistence;
 using CoreTemplate.Modules.Catalogos.Infrastructure.Persistence;
+using CoreTemplate.Modules.EmailTemplates.Infrastructure.Persistence;
 
 namespace CoreTemplate.Api.Extensions;
 
@@ -15,5 +16,6 @@ public static class ApplicationSeederExtension
 
         await AuthDataSeeder.SeedAsync(scope.ServiceProvider);
         await CatalogosDataSeeder.SeedAsync(scope.ServiceProvider);
+        await EmailTemplatesDataSeeder.SeedAsync(scope.ServiceProvider);
     }
 }

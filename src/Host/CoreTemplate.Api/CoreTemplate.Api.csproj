@@ -22,6 +22,10 @@
     <ProjectReference Include="..\..\Modules\Auth\CoreTemplate.Modules.Auth.Api\CoreTemplate.Modules.Auth.Api.csproj" />
     <ProjectReference Include="..\..\Modules\Catalogos\CoreTemplate.Modules.Catalogos.Infrastructure\CoreTemplate.Modules.Catalogos.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Catalogos\CoreTemplate.Modules.Catalogos.Api\CoreTemplate.Modules.Catalogos.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\EmailTemplates\CoreTemplate.Modules.EmailTemplates.Infrastructure\CoreTemplate.Modules.EmailTemplates.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\EmailTemplates\CoreTemplate.Modules.EmailTemplates.Api\CoreTemplate.Modules.EmailTemplates.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Archivos\CoreTemplate.Modules.Archivos.Infrastructure\CoreTemplate.Modules.Archivos.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Archivos\CoreTemplate.Modules.Archivos.Api\CoreTemplate.Modules.Archivos.Api.csproj" />
   </ItemGroup>
 
 </Project>
