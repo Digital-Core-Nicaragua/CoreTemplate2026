@@ -13,7 +13,6 @@ namespace CoreTemplate.Modules.Archivos.Api.Controllers;
 public sealed class SubirArchivoFormRequest
 {
     public IFormFile Archivo { get; set; } = null!;
-    public string Contexto { get; set; } = string.Empty;
     public string ModuloOrigen { get; set; } = string.Empty;
     public Guid? EntidadId { get; set; }
 }
@@ -35,7 +34,7 @@ public sealed class ArchivosController(ISender sender) : BaseApiController
 
         var result = await sender.Send(new SubirArchivoCommand(
             stream, req.Archivo.FileName, req.Archivo.ContentType,
-            req.Contexto, req.ModuloOrigen, req.EntidadId), ct);
+            req.ModuloOrigen, req.EntidadId), ct);
 
         return result.IsSuccess
             ? Created(string.Empty, ApiResponse<ArchivoAdjuntoDto>.FromResult(result))

@@ -8,6 +8,10 @@ using CoreTemplate.Modules.Auth.Infrastructure.Middleware;
 using CoreTemplate.Modules.Catalogos.Infrastructure;
 using CoreTemplate.Modules.Archivos.Infrastructure;
 using CoreTemplate.Modules.EmailTemplates.Infrastructure;
+using CoreTemplate.Modules.PdfTemplates.Infrastructure;
+using CoreTemplate.Modules.Configuracion.Infrastructure;
+using CoreTemplate.Modules.Notificaciones.Infrastructure;
+using CoreTemplate.Modules.Auditoria.Application;
 using Microsoft.OpenApi.Models;
 using Serilog;
 
@@ -32,7 +36,11 @@ try
         .AddApplicationPart(typeof(CoreTemplate.Modules.Auth.Api.Controllers.AuthController).Assembly)
         .AddApplicationPart(typeof(CoreTemplate.Modules.Catalogos.Api.Controllers.CatalogosController).Assembly)
         .AddApplicationPart(typeof(CoreTemplate.Modules.EmailTemplates.Api.Controllers.EmailTemplatesController).Assembly)
-        .AddApplicationPart(typeof(CoreTemplate.Modules.Archivos.Api.Controllers.ArchivosController).Assembly);
+        .AddApplicationPart(typeof(CoreTemplate.Modules.Archivos.Api.Controllers.ArchivosController).Assembly)
+        .AddApplicationPart(typeof(CoreTemplate.Modules.PdfTemplates.Api.Controllers.PdfTemplatesController).Assembly)
+        .AddApplicationPart(typeof(CoreTemplate.Modules.Configuracion.Api.Controllers.ConfiguracionController).Assembly)
+        .AddApplicationPart(typeof(CoreTemplate.Modules.Notificaciones.Api.Controllers.NotificacionesController).Assembly)
+        .AddApplicationPart(typeof(CoreTemplate.Modules.Auditoria.Api.Controllers.AuditoriaController).Assembly);
 
     // Infraestructura base (incluye Logging, Auditing, Monitoring)
     builder.Services.AddInfrastructureBase(builder.Configuration);
@@ -52,6 +60,18 @@ try
 
     // Modulo Archivos (incluye building block Storage)
     builder.Services.AddArchivosModule(builder.Configuration);
+
+    // Modulo PdfTemplates (incluye building block Pdf con QuestPDF)
+    builder.Services.AddPdfTemplatesModule(builder.Configuration);
+
+    // Modulo Configuracion del Sistema
+    builder.Services.AddConfiguracionModule(builder.Configuration);
+
+    // Modulo Notificaciones (SignalR)
+    builder.Services.AddNotificacionesModule(builder.Configuration);
+
+    // Modulo Auditoria (consulta de logs — reutiliza AuditDbContext)
+    builder.Services.AddAuditoriaApplication();
 
     // Swagger con soporte JWT
     builder.Services.AddEndpointsApiExplorer();
@@ -135,6 +155,9 @@ try
 
     app.UseAuthorization();
     app.MapControllers();
+
+    // Hub de SignalR para notificaciones en tiempo real
+    app.MapHub<CoreTemplate.Notifications.Hubs.NotificationHub>("/hubs/notificaciones");
 
     app.Run();
 }

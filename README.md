@@ -2,25 +2,33 @@
 
 Plantilla base reutilizable para sistemas **ASP.NET Core 10** con **Clean Architecture + DDD + CQRS**.
 
-Clona esta plantilla, ejecuta un script y tendrás un sistema funcional con autenticación enterprise-grade, sesiones gestionables, token blacklist, multi-tenant configurable, sucursales opcionales y un catálogo de ejemplo listo para extender.
+Clona esta plantilla, ejecuta un script y tendrás un sistema funcional con autenticación enterprise-grade, notificaciones en tiempo real, gestión de archivos, generación de PDFs, envío de correos con plantillas editables, configuración del sistema desde la UI y auditoría completa.
 
 ---
 
 ## ¿Qué incluye?
 
-| Módulo | Descripción |
+| Módulo / Building Block | Descripción |
 |---|---|
-| **Auth** | Login JWT, Sesiones gestionables, Token Blacklist, Tipos de usuario, Canales de acceso, 2FA TOTP, Roles y Permisos, Sucursales (opcional), Catálogo de Acciones (opcional), Auditoría |
-| **Catálogos** | Catálogo de ejemplo completamente implementado — sirve como patrón para crear nuevos catálogos |
+| **Auth** | Login JWT, Sesiones, Token Blacklist, 2FA TOTP, Roles, Permisos, Sucursales, Multi-tenant, Portal Clientes |
+| **Configuracion** | Parámetros del sistema editables desde la UI sin redeployar (nombre empresa, moneda, series, etc.) |
+| **Notificaciones** | Notificaciones en tiempo real via SignalR + historial en BD |
+| **EmailTemplates** | Plantillas de correo editables en BD con fallback a archivos HTML |
+| **Archivos** | Metadatos de archivos subidos, multi-tenant |
+| **PdfTemplates** | Generación de PDFs con QuestPDF, diseños intercambiables, configuración corporativa por tenant |
+| **Auditoria** | Consulta de logs de auditoría con filtros (quién hizo qué y cuándo) |
+| **Catálogos** | Patrón de referencia para crear nuevos catálogos |
+| **CoreTemplate.Email** | Building block: Mailjet, SMTP, SendGrid — cambiar proveedor sin tocar código |
+| **CoreTemplate.Storage** | Building block: Local, AWS S3, Firebase — cambiar proveedor sin tocar código |
+| **CoreTemplate.Pdf** | Building block: QuestPDF con 4 diseños base (vertical, horizontal, compacto, moderno) |
+| **CoreTemplate.Notifications** | Building block: SignalR Hub con autenticación JWT |
 | **SharedKernel** | `Result<T>`, `PagedResult<T>`, `AggregateRoot`, `Entity`, `ValueObject`, `IDomainEvent` |
-| **Abstractions** | `ICurrentUser`, `ICurrentTenant`, `ICurrentBranch`, `IDateTimeProvider` — contratos sin dependencia de Infrastructure |
+| **Abstractions** | `ICurrentUser`, `ICurrentTenant`, `ICurrentBranch`, `IDateTimeProvider` |
 | **Api.Common** | `ApiResponse<T>`, `BaseApiController`, `GlobalExceptionHandler`, `ValidationBehavior` |
-| **Infrastructure** | `BaseDbContext` multi-tenant, implementaciones de Abstractions, `TenantMiddleware` |
-| **Auditing** 🔧 | `IAuditService`, `AuditLog`, `AuditSaveChangesInterceptor` — auditoría automática y explícita |
-| **Logging** 🔧 | `IAppLogger`, `ICorrelationContext`, `CorrelationMiddleware` — logging estructurado con X-Correlation-Id |
-| **Monitoring** 🔧 | Health checks para DB y Redis, endpoints `/health`, `/health/ready`, `/health/live` |
-
-> 🔧 = En plan de implementación. Ver [PLAN-MEJORAS-BUILDING-BLOCKS.md](docs/PLAN-MEJORAS-BUILDING-BLOCKS.md)
+| **Infrastructure** | `BaseDbContext` multi-tenant, `TenantMiddleware` |
+| **Auditing** | `IAuditService`, `AuditLog`, `AuditSaveChangesInterceptor` |
+| **Logging** | `IAppLogger`, `ICorrelationContext`, `CorrelationMiddleware` |
+| **Monitoring** | Health checks para DB y Redis, endpoints `/health` |
 
 ---
 
@@ -64,15 +72,29 @@ Edita `src/Host/MiSistema.Api/appsettings.Development.json`:
 ### 4. Ejecutar migraciones
 
 ```bash
-dotnet ef database update \
-  --project src/Modules/Auth/MiSistema.Modules.Auth.Infrastructure \
-  --startup-project src/Host/MiSistema.Api \
-  --context AuthDbContext
+# Auth
+dotnet ef database update --project src/Modules/Auth/MiSistema.Modules.Auth.Infrastructure --startup-project src/Host/MiSistema.Api --context AuthDbContext
 
-dotnet ef database update \
-  --project src/Modules/Catalogos/MiSistema.Modules.Catalogos.Infrastructure \
-  --startup-project src/Host/MiSistema.Api \
-  --context CatalogosDbContext
+# Catalogos
+dotnet ef database update --project src/Modules/Catalogos/MiSistema.Modules.Catalogos.Infrastructure --startup-project src/Host/MiSistema.Api --context CatalogosDbContext
+
+# EmailTemplates
+dotnet ef database update --project src/Modules/EmailTemplates/MiSistema.Modules.EmailTemplates.Infrastructure --startup-project src/Host/MiSistema.Api --context EmailTemplatesDbContext
+
+# Archivos
+dotnet ef database update --project src/Modules/Archivos/MiSistema.Modules.Archivos.Infrastructure --startup-project src/Host/MiSistema.Api --context ArchivosDbContext
+
+# PdfTemplates
+dotnet ef database update --project src/Modules/PdfTemplates/MiSistema.Modules.PdfTemplates.Infrastructure --startup-project src/Host/MiSistema.Api --context PdfTemplatesDbContext
+
+# Configuracion
+dotnet ef database update --project src/Modules/Configuracion/MiSistema.Modules.Configuracion.Infrastructure --startup-project src/Host/MiSistema.Api --context ConfiguracionDbContext
+
+# Notificaciones
+dotnet ef database update --project src/Modules/Notificaciones/MiSistema.Modules.Notificaciones.Infrastructure --startup-project src/Host/MiSistema.Api --context NotificacionesDbContext
+
+# Auditoria (building block — schema Shared)
+dotnet ef database update --project src/BuildingBlocks/MiSistema.Auditing --startup-project src/Host/MiSistema.Api --context AuditDbContext
 ```
 
 ### 5. Ejecutar
@@ -99,7 +121,7 @@ POST /api/auth/login
 {
   "email": "admin@coretemplate.com",
   "password": "Admin@1234!",
-  "canal": "Web"
+  "canal": 1
 }
 ```
 
@@ -111,375 +133,65 @@ POST /api/auth/login
 
 ```json
 {
-  "DatabaseSettings": {
-    "Provider": "SqlServer",
-    "ConnectionString": "..."
-  },
-  "TenantSettings": {
-    "IsMultiTenant": false,
-    "TenantResolutionStrategy": "Header",
-    "EnableSessionLimitsPerTenant": false
-  },
-  "AuthSettings": {
-    "JwtSecretKey": "CAMBIAR-EN-PRODUCCION-MINIMO-256-BITS",
-    "JwtIssuer": "MiSistema",
-    "JwtAudience": "MiSistema",
-    "AccessTokenExpirationMinutes": 15,
-    "RefreshTokenExpirationDays": 7,
-    "TwoFactorEnabled": false,
-    "TwoFactorRequired": false,
-    "PasswordResetTokenExpirationHours": 1,
-    "MaxSesionesSimultaneas": 5,
-    "AccionAlLlegarLimiteSesiones": "CerrarMasAntigua",
-    "EnableTokenBlacklist": true,
-    "UseActionCatalog": false
-  },
-  "LockoutSettings": {
-    "MaxFailedAttempts": 5,
-    "LockoutDurationMinutes": 15,
-    "AutoUnlock": true
-  },
-  "PasswordPolicy": {
-    "MinLength": 8,
-    "RequireUppercase": true,
-    "RequireLowercase": true,
-    "RequireDigit": true,
-    "RequireSpecialChar": false
-  },
-  "TokenBlacklistSettings": {
-    "Provider": "InMemory",
-    "RedisConnectionString": ""
-  },
-  "OrganizationSettings": {
-    "EnableBranches": false
-  }
+  "DatabaseSettings": { "Provider": "SqlServer", "ConnectionString": "..." },
+  "TenantSettings": { "IsMultiTenant": false },
+  "AuthSettings": { "JwtSecretKey": "...", "AccessTokenExpirationMinutes": 15 },
+  "EmailSettings": { "Provider": "Smtp" },
+  "SmtpSettings": { "Host": "localhost", "Port": 1025 },
+  "MailjetSettings": { "ApiKey": "", "SecretKey": "", "FromEmail": "", "FromName": "" },
+  "StorageSettings": { "Provider": "Local", "MaxTamanioMB": 20 },
+  "LocalStorageSettings": { "BasePath": "archivos", "RequestPath": "/archivos" },
+  "S3Settings": { "BucketName": "", "Region": "us-east-1", "AccessKey": "", "SecretKey": "" },
+  "AppSettings": { "Nombre": "Mi Sistema", "Url": "https://localhost:5001" },
+  "NotificationSettings": { "Handlers": { "UsuarioBloqueado": true, "PasswordCambiado": true } }
 }
-```
-
-### Multi-tenant
-
-| `IsMultiTenant` | Comportamiento |
-|---|---|
-| `false` (default) | Single-tenant — TenantId ignorado |
-| `true` | Filtrado automático por TenantId, header `X-Tenant-Id` requerido |
-
-Con `EnableSessionLimitsPerTenant: true` cada tenant puede tener su propio límite de sesiones (jerarquía: Tenant > Global > Default 5).
-
-### Sesiones
-
-| Configuración | Descripción |
-|---|---|
-| `MaxSesionesSimultaneas` | Límite de sesiones activas por usuario (default: 5) |
-| `AccionAlLlegarLimiteSesiones` | `CerrarMasAntigua` o `BloquearNuevoLogin` |
-
-### Token Blacklist
-
-| `Provider` | Cuándo usar |
-|---|---|
-| `InMemory` | Desarrollo o un solo servidor |
-| `Redis` | Producción con múltiples instancias |
-
-Con `EnableTokenBlacklist: true`, los tokens se invalidan inmediatamente al hacer logout o cambiar contraseña.
-
-```mermaid
-stateDiagram-v2
-    [*] --> Activo: Login exitoso
-    Activo --> Revocado: Logout / CambioPassword
-    Activo --> Expirado: TTL vencido (15 min)
-    Revocado --> [*]: Blacklist entry expira
-    Expirado --> [*]
-    Revocado --> Rechazado: Request con token revocado
-    Rechazado --> [*]: 401 Unauthorized
-```
-
-### Tipos de usuario
-
-```csharp
-public enum TipoUsuario { Humano = 1, Sistema = 2, Integracion = 3 }
-```
-
-| Tipo | Comportamiento |
-|---|---|
-| `Humano` | Aplican todas las reglas: 2FA, bloqueo, límite de sesiones |
-| `Sistema` | Sin 2FA, sin bloqueo, sin límite de sesiones |
-| `Integracion` | Sin 2FA, sin bloqueo, sin límite de sesiones |
-
-### Canales de acceso
-
-```csharp
-public enum CanalAcceso { Web = 1, Mobile = 2, Api = 3, Desktop = 4 }
-```
-
-Cada sesión registra el canal de origen. Se incluye como claim `canal` en el JWT.
-
-### Sucursales (opcional)
-
-```json
-{
-  "OrganizationSettings": {
-    "EnableBranches": false
-  }
-}
-```
-
-Con `EnableBranches: true`:
-- Los usuarios se asignan a una o más sucursales con una principal
-- El JWT incluye el claim `branch_id` de la sucursal activa
-- Los roles se pueden asignar por combinación `usuario + sucursal`
-- El usuario puede cambiar su sucursal activa con `PUT /api/perfil/sucursal-activa`
-
-### Catálogo de Acciones (opcional)
-
-```json
-{
-  "AuthSettings": {
-    "UseActionCatalog": false
-  }
-}
-```
-
-Con `UseActionCatalog: true`, los permisos se gestionan como aggregates desde `/api/acciones` en lugar de strings estáticos.
-
-### 2FA
-
-| Configuración | Comportamiento |
-|---|---|
-| `TwoFactorEnabled: false` | 2FA deshabilitado |
-| `TwoFactorEnabled: true, TwoFactorRequired: false` | 2FA opcional por usuario |
-| `TwoFactorEnabled: true, TwoFactorRequired: true` | 2FA obligatorio (solo usuarios Humano) |
-
-```mermaid
-flowchart TD
-    LOGIN[POST /login] --> CREDS{Credenciales\nválidas?}
-    CREDS -- No --> LOCKOUT{Intentos\nexcedidos?}
-    LOCKOUT -- Sí --> BLOCKED[403 Cuenta bloqueada]
-    LOCKOUT -- No --> ERR[401 Credenciales inválidas]
-
-    CREDS -- Sí --> TIPO{TipoUsuario}
-    TIPO -- Sistema / Integración --> SESIONES
-    TIPO -- Humano --> FA{2FA\nhabilitado?}
-
-    FA -- No --> SESIONES
-    FA -- Sí --> TEMP[200 tokenTemporal\nrequires2FA: true]
-    TEMP --> TOTP[POST /2fa/verificar]
-    TOTP --> VALID{Código\nválido?}
-    VALID -- No --> ERR2[401 Código inválido]
-    VALID -- Sí --> SESIONES
-
-    SESIONES{Límite de\nsesiones?} -- Bajo límite --> TOKEN[200 accessToken + refreshToken]
-    SESIONES -- Límite alcanzado --> ACCION{AccionAlLlegarLimite}
-    ACCION -- CerrarMasAntigua --> CIERRA[Cierra sesión más antigua]
-    CIERRA --> TOKEN
-    ACCION -- BloquearNuevoLogin --> DENY[403 Límite de sesiones alcanzado]
 ```
 
 ---
 
 ## Endpoints disponibles
 
-### Auth (`/api/auth`)
+### Auth (`/api/auth`) — Login, 2FA, Refresh, Logout, Reset Password
+### Usuarios (`/api/usuarios`) — CRUD, roles, sesiones
+### Perfil (`/api/perfil`) — Mi perfil, cambiar password, mis sesiones
+### Roles (`/api/roles`) — CRUD de roles
+### Configuracion (`/api/configuracion`) — Parámetros del sistema
+### Notificaciones (`/api/notificaciones`) — Historial, marcar leídas
+### EmailTemplates (`/api/email-templates`) — CRUD, preview, enviar prueba
+### Archivos (`/api/archivos`) — Subir, obtener URL, eliminar
+### PdfTemplates (`/api/pdf-templates`) — CRUD, diseños disponibles, preview
+### Auditoria (`/api/auditoria`) — Consulta de logs con filtros
+### Catálogos (`/api/catalogos`) — Patrón de referencia
 
-| Método | Ruta | Descripción | Auth |
-|---|---|---|---|
-| POST | `/login` | Login (soporta `canal` y `tipoUsuario`) | No |
-| POST | `/registro` | Registrar nuevo usuario | No |
-| POST | `/refresh` | Renovar AccessToken | No |
-| POST | `/logout` | Cerrar sesión + blacklist del token | Sí |
-| POST | `/solicitar-restablecimiento` | Solicitar reset de contraseña | No |
-| POST | `/restablecer-password` | Restablecer contraseña con token | No |
-| POST | `/2fa/activar` | Iniciar activación de 2FA | Sí |
-| POST | `/2fa/confirmar` | Confirmar activación con código TOTP | Sí |
-| POST | `/2fa/verificar` | Verificar código TOTP en login | No |
-| POST | `/2fa/desactivar` | Desactivar 2FA | Sí |
-
-### Usuarios (`/api/usuarios`)
-
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/` | Listar usuarios (paginado) |
-| GET | `/{id}` | Obtener usuario por ID |
-| PUT | `/{id}/activar` | Activar usuario |
-| PUT | `/{id}/desactivar` | Desactivar usuario |
-| PUT | `/{id}/desbloquear` | Desbloquear usuario |
-| POST | `/{id}/roles` | Asignar rol global |
-| DELETE | `/{id}/roles/{rolId}` | Quitar rol global |
-| GET | `/{id}/sesiones` | Ver sesiones activas (admin) |
-| DELETE | `/{id}/sesiones` | Cerrar todas las sesiones (admin) |
-| POST | `/{id}/sucursales/{sucursalId}/roles` | Asignar rol por sucursal |
-| DELETE | `/{id}/sucursales/{sucursalId}/roles/{rolId}` | Quitar rol por sucursal |
-
-### Perfil (`/api/perfil`)
-
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/` | Ver mi perfil |
-| PUT | `/cambiar-password` | Cambiar contraseña |
-| GET | `/sesiones` | Ver mis sesiones activas |
-| DELETE | `/sesiones/{id}` | Cerrar una sesión específica |
-| DELETE | `/sesiones/otras` | Cerrar todas excepto la actual |
-| PUT | `/sucursal-activa` | Cambiar sucursal activa |
-
-### Roles (`/api/roles`)
-
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/` | Listar roles |
-| GET | `/{id}` | Obtener rol por ID |
-| POST | `/` | Crear rol |
-| PUT | `/{id}` | Actualizar rol |
-| DELETE | `/{id}` | Eliminar rol |
-
-### Sucursales (`/api/sucursales`) — requiere `EnableBranches: true`
-
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/` | Listar sucursales |
-| POST | `/` | Crear sucursal |
-| GET | `/usuarios/{usuarioId}` | Ver sucursales de un usuario |
-| POST | `/usuarios/{usuarioId}` | Asignar sucursal a usuario |
-| DELETE | `/usuarios/{usuarioId}/{sucursalId}` | Remover sucursal de usuario |
-
-### Acciones (`/api/acciones`) — requiere `UseActionCatalog: true`
-
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/` | Listar acciones (filtrable por módulo) |
-| POST | `/` | Crear acción |
-| PUT | `/{id}/activar` | Activar acción |
-| PUT | `/{id}/desactivar` | Desactivar acción |
-
-### Tenants (`/api/tenants`) — requiere `IsMultiTenant: true`
-
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/{tenantId}/configuracion` | Ver configuración del tenant |
-| PUT | `/{tenantId}/limite-sesiones` | Configurar límite de sesiones |
-
-### Catálogos (`/api/catalogos`)
-
-| Método | Ruta | Descripción |
-|---|---|---|
-| GET | `/` | Listar ítems (paginado, filtrable, buscable) |
-| GET | `/{id}` | Obtener ítem por ID |
-| POST | `/` | Crear ítem |
-| PUT | `/{id}/activar` | Activar ítem |
-| PUT | `/{id}/desactivar` | Desactivar ítem |
+### WebSocket
+| Endpoint | Descripción |
+|---|---|
+| `/hubs/notificaciones` | SignalR Hub — notificaciones en tiempo real |
 
 ---
 
-## Flujo de autenticación
+## Notificaciones en tiempo real (SignalR)
 
-### Login normal
+```javascript
+const connection = new signalR.HubConnectionBuilder()
+    .withUrl("/hubs/notificaciones", {
+        accessTokenFactory: () => localStorage.getItem("accessToken")
+    })
+    .withAutomaticReconnect()
+    .build();
 
-```mermaid
-sequenceDiagram
-    actor U as Usuario
-    participant API as /api/auth/login
-    participant Auth as AuthService
-    participant DB as Database
+connection.on("RecibirNotificacion", (n) => {
+    mostrarToast(n.titulo, n.mensaje, n.tipo);
+});
 
-    U->>API: POST { email, password, canal }
-    API->>Auth: ValidarCredenciales()
-    Auth->>DB: BuscarUsuario(email)
-    DB-->>Auth: Usuario
-    Auth->>Auth: VerificarPassword()
-    Auth->>DB: CrearSesion()
-    Auth-->>API: accessToken + refreshToken
-    API-->>U: 200 { accessToken, refreshToken, usuario }
+await connection.start();
 ```
 
-### Login con 2FA activo
-
-```mermaid
-sequenceDiagram
-    actor U as Usuario
-    participant API as /api/auth
-    participant Auth as AuthService
-
-    U->>API: POST /login { email, password, canal }
-    API->>Auth: ValidarCredenciales()
-    Auth-->>API: requires2FA = true
-    API-->>U: 200 { requires2FA: true, tokenTemporal }
-
-    U->>API: POST /2fa/verificar { tokenTemporal, codigo }
-    API->>Auth: VerificarTOTP(codigo)
-    Auth-->>API: OK
-    API-->>U: 200 { accessToken, refreshToken, usuario }
-```
-
-### Renovar token
-
-```mermaid
-sequenceDiagram
-    actor U as Usuario
-    participant API as /api/auth/refresh
-    participant Auth as AuthService
-
-    U->>API: POST { refreshToken }
-    API->>Auth: ValidarRefreshToken()
-    Auth->>Auth: GenerarNuevoAccessToken()
-    Auth-->>API: nuevos tokens
-    API-->>U: 200 { accessToken, refreshToken, accessTokenExpiraEn }
-```
-
-### Logout con blacklist
-
-```mermaid
-sequenceDiagram
-    actor U as Usuario
-    participant API as /api/auth/logout
-    participant Auth as AuthService
-    participant BL as TokenBlacklist
-
-    U->>API: POST { refreshToken } + Bearer accessToken
-    API->>Auth: RevocarSesion(refreshToken)
-    Auth->>BL: AgregarABlacklist(accessToken)
-    Auth-->>API: OK
-    API-->>U: 200 Sesión cerrada
-
-    U->>API: GET /cualquier-endpoint (mismo accessToken)
-    API->>BL: EstaEnBlacklist(accessToken)?
-    BL-->>API: true
-    API-->>U: 401 Unauthorized
-```
-
----
-
-## Formato de respuesta
-
-```json
-{
-  "success": true,
-  "message": "Operación exitosa.",
-  "data": { ... },
-  "errors": []
-}
-```
+Ver guía completa: `docs/Notificaciones/03-Guias/01-MANUAL-DE-USO.md`
 
 ---
 
 ## Arquitectura
-
-```mermaid
-flowchart TD
-    Host["🌐 Host\nMiSistema.Api"] --> Auth["🔐 Auth Module"]
-    Host --> Catalogos["📦 Catalogos Module"]
-    Host --> BB["🧱 BuildingBlocks"]
-
-    Auth --> BB
-    Catalogos --> BB
-
-    BB --> SK["SharedKernel\nResult, AggregateRoot, Entity"]
-    BB --> AB["Abstractions\nICurrentUser, ICurrentTenant"]
-    BB --> AC["Api.Common\nBaseApiController, ApiResponse"]
-    BB --> INF["Infrastructure\nBaseDbContext, TenantMiddleware"]
-    BB --> AUD["Auditing 🔧"]
-    BB --> LOG["Logging 🔧"]
-    BB --> MON["Monitoring 🔧"]
-
-    INF --> DB[("SQL Server\nPostgreSQL")]
-    INF --> REDIS[("Redis\nToken Blacklist")]
-```
 
 ```
 src/
@@ -487,54 +199,46 @@ src/
 │   ├── SharedKernel       → Result, PagedResult, AggregateRoot, Entity, ValueObject
 │   ├── Abstractions       → ICurrentUser, ICurrentTenant, ICurrentBranch, IDateTimeProvider
 │   ├── Api.Common         → ApiResponse, BaseApiController, GlobalExceptionHandler
-│   ├── Infrastructure     → BaseDbContext, implementaciones de Abstractions, TenantMiddleware
-│   ├── Auditing 🔧         → IAuditService, AuditLog, AuditSaveChangesInterceptor
-│   ├── Logging 🔧          → IAppLogger, ICorrelationContext, CorrelationMiddleware
-│   └── Monitoring 🔧       → Health checks (DB, Redis), endpoints /health
+│   ├── Infrastructure     → BaseDbContext, TenantMiddleware
+│   ├── Auditing           → IAuditService, AuditLog, AuditSaveChangesInterceptor
+│   ├── Logging            → IAppLogger, ICorrelationContext, CorrelationMiddleware
+│   ├── Monitoring         → Health checks (DB, Redis), endpoints /health
+│   ├── Email              → IEmailSender (Mailjet, SMTP, SendGrid)
+│   ├── Storage            → IStorageService (Local, S3, Firebase)
+│   ├── Pdf                → IPdfDocumentTemplate, QuestPDF, 4 diseños base
+│   └── Notifications      → INotificationSender, SignalR Hub
 ├── Host/
 │   └── MiSistema.Api      → Program.cs, appsettings, punto de entrada
 └── Modules/
     ├── Auth/              → Autenticación enterprise-grade
-    └── Catalogos/         → Catálogo de ejemplo (patrón reutilizable)
+    ├── Configuracion/     → Parámetros del sistema editables en BD
+    ├── Notificaciones/    → Notificaciones en tiempo real + historial
+    ├── EmailTemplates/    → Plantillas de correo editables en BD
+    ├── Archivos/          → Metadatos de archivos almacenados
+    ├── PdfTemplates/      → Plantillas PDF con QuestPDF
+    ├── Auditoria/         → Consulta de logs de auditoría
+    └── Catalogos/         → Patrón de referencia para nuevos catálogos
 
 tests/
-├── SharedKernel.Tests     → 19 tests
-├── Auth.Tests             → 92 tests
-└── Catalogos.Tests        → 15 tests
-```
-
-> 🔧 = En plan de implementación. Ver [PLAN-MEJORAS-BUILDING-BLOCKS.md](docs/PLAN-MEJORAS-BUILDING-BLOCKS.md)
-
-### Capas por módulo
-
-```mermaid
-flowchart LR
-    API["Api\nControllers, Contracts\nDependencyInjection"] --> APP
-    APP["Application\nCommands, Queries\nHandlers, Validators, DTOs"] --> DOM
-    DOM["Domain\nAggregates, ValueObjects\nEvents, Repositories"]
-    INF["Infrastructure\nDbContext, Repositories\nServicios, Migraciones"] --> APP
-    INF --> DOM
+├── SharedKernel.Tests
+├── Auth.Tests
+└── Catalogos.Tests
 ```
 
 ---
 
-## Estructura de la base de datos
+## Schemas de base de datos
 
-| Schema | Tablas |
-|---|---|
-| `Auth` | Usuarios, Roles, Permisos, UsuarioRoles, RolPermisos, Sesiones, TokensRestablecimiento, CodigosRecuperacion2FA, RegistrosAuditoria, Sucursales, UsuarioSucursales, AsignacionesRol, Acciones, ConfiguracionesTenant |
-| `Catalogos` | CatalogoItems |
-| `Shared` 🔧 | AuditLogs |
-
----
-
-## Tests
-
-```bash
-dotnet test
-```
-
-Resultado esperado: **126 tests — 0 fallos**
+| Schema | Módulo | Tablas principales |
+|---|---|---|
+| `Auth` | Auth | Usuarios, Roles, Permisos, Sesiones, Sucursales, Acciones |
+| `Catalogos` | Catalogos | CatalogoItems |
+| `EmailTemplates` | EmailTemplates | Plantillas |
+| `Archivos` | Archivos | Archivos |
+| `PdfTemplates` | PdfTemplates | Plantillas |
+| `Configuracion` | Configuracion | Items |
+| `Notificaciones` | Notificaciones | Notificaciones |
+| `Shared` | Auditing | AuditLogs |
 
 ---
 
@@ -549,6 +253,10 @@ Resultado esperado: **126 tests — 0 fallos**
 | BCrypt.Net | 4 | Hash de contraseñas |
 | Otp.NET | 1.4 | 2FA TOTP |
 | StackExchange.Redis | 2.8 | Token Blacklist (opcional) |
+| SignalR | Incluido en ASP.NET Core | Notificaciones en tiempo real |
+| Mailjet.Api | 4.0 | Envío de correos |
+| AWSSDK.S3 | 4.0 | Almacenamiento en S3 |
+| QuestPDF | 2026.2 | Generación de PDFs |
 | Serilog | 9 | Logging estructurado |
 | xUnit v3 | 3 | Tests unitarios |
 | FluentAssertions | 8 | Assertions en tests |
@@ -557,31 +265,10 @@ Resultado esperado: **126 tests — 0 fallos**
 
 ---
 
-## Roadmap de mejoras
+## Tests
 
-Ver [PLAN-MEJORAS-BUILDING-BLOCKS.md](docs/PLAN-MEJORAS-BUILDING-BLOCKS.md) para el detalle completo.
-
-| Fase | Building Block | Estado |
-|---|---|---|
-| 1 | `CoreTemplate.Abstractions` | ✅ Implementado |
-| 2 | `CoreTemplate.Auditing` | ✅ Implementado |
-| 3 | `CoreTemplate.Logging` | ✅ Implementado |
-| 4 | `CoreTemplate.Monitoring` | ✅ Implementado |
-| 5 | `DependencyInjection` en capas Api | ✅ Implementado |
-| 25 | Registro por Teléfono / WhatsApp (Portal Clientes) | 🔧 Pendiente |
-
-```mermaid
-flowchart LR
-    F1["Fase 1\nAbstractions"] --> F2["Fase 2\nAuditing"]
-    F2 --> F3["Fase 3\nLogging"]
-    F3 --> F4["Fase 4\nMonitoring"]
-    F4 --> F5["Fase 5\nDependencyInjection"]
-
-    style F1 fill:#f0ad4e,color:#000
-    style F2 fill:#f0ad4e,color:#000
-    style F3 fill:#f0ad4e,color:#000
-    style F4 fill:#f0ad4e,color:#000
-    style F5 fill:#f0ad4e,color:#000
+```bash
+dotnet test
 ```
 
 ---

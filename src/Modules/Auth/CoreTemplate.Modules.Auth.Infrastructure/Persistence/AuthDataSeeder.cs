@@ -55,6 +55,16 @@ public static class AuthDataSeeder
             ("Catalogos.Ver", "Ver catálogos", "Listar y consultar ítems de catálogo", "Catalogos"),
             ("Catalogos.Crear", "Crear ítems", "Crear nuevos ítems de catálogo", "Catalogos"),
             ("Catalogos.Gestionar", "Gestionar catálogos", "Activar y desactivar ítems", "Catalogos"),
+
+            // Configuracion
+            ("Configuracion.Ver", "Ver configuración", "Ver parámetros del sistema", "Configuracion"),
+            ("Configuracion.Editar", "Editar configuración", "Actualizar parámetros del sistema", "Configuracion"),
+
+            // Notificaciones
+            ("Notificaciones.Ver", "Ver notificaciones", "Ver mis notificaciones", "Notificaciones"),
+
+            // Auditoria
+            ("Auditoria.Ver", "Ver auditoría", "Consultar logs de auditoría del sistema", "Auditoria"),
         };
 
         foreach (var (codigo, nombre, descripcion, modulo) in permisos)

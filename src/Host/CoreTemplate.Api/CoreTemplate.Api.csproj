@@ -26,6 +26,14 @@
     <ProjectReference Include="..\..\Modules\EmailTemplates\CoreTemplate.Modules.EmailTemplates.Api\CoreTemplate.Modules.EmailTemplates.Api.csproj" />
     <ProjectReference Include="..\..\Modules\Archivos\CoreTemplate.Modules.Archivos.Infrastructure\CoreTemplate.Modules.Archivos.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Archivos\CoreTemplate.Modules.Archivos.Api\CoreTemplate.Modules.Archivos.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\PdfTemplates\CoreTemplate.Modules.PdfTemplates.Infrastructure\CoreTemplate.Modules.PdfTemplates.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\PdfTemplates\CoreTemplate.Modules.PdfTemplates.Api\CoreTemplate.Modules.PdfTemplates.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Configuracion\CoreTemplate.Modules.Configuracion.Infrastructure\CoreTemplate.Modules.Configuracion.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Configuracion\CoreTemplate.Modules.Configuracion.Api\CoreTemplate.Modules.Configuracion.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Notificaciones\CoreTemplate.Modules.Notificaciones.Infrastructure\CoreTemplate.Modules.Notificaciones.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Notificaciones\CoreTemplate.Modules.Notificaciones.Api\CoreTemplate.Modules.Notificaciones.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Auditoria\CoreTemplate.Modules.Auditoria.Application\CoreTemplate.Modules.Auditoria.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Auditoria\CoreTemplate.Modules.Auditoria.Api\CoreTemplate.Modules.Auditoria.Api.csproj" />
   </ItemGroup>
 
 </Project>

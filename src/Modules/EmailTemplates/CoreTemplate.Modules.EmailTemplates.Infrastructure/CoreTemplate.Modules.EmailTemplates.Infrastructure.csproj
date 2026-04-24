@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>CoreTemplate.Modules.EmailTemplates.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Copiar templates HTML al directorio de salida -->
     <Content Include="Templates\**\*.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

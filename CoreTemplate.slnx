@@ -3,15 +3,23 @@
   <Folder Name="/src/BuildingBlocks/">
     <Project Path="src/BuildingBlocks/CoreTemplate.Api.Common/CoreTemplate.Api.Common.csproj" />
     <Project Path="src/BuildingBlocks/CoreTemplate.Auditing/CoreTemplate.Auditing.csproj" />
+    <Project Path="src/BuildingBlocks/CoreTemplate.Email/CoreTemplate.Email.csproj" />
     <Project Path="src/BuildingBlocks/CoreTemplate.Infrastructure/CoreTemplate.Infrastructure.csproj" />
     <Project Path="src/BuildingBlocks/CoreTemplate.Logging/CoreTemplate.Logging.csproj" />
     <Project Path="src/BuildingBlocks/CoreTemplate.Monitoring/CoreTemplate.Monitoring.csproj" />
+    <Project Path="src/BuildingBlocks/CoreTemplate.Notifications/CoreTemplate.Notifications.csproj" />
+    <Project Path="src/BuildingBlocks/CoreTemplate.Pdf/CoreTemplate.Pdf.csproj" />
     <Project Path="src/BuildingBlocks/CoreTemplate.SharedKernel/CoreTemplate.SharedKernel.csproj" />
+    <Project Path="src/BuildingBlocks/CoreTemplate.Storage/CoreTemplate.Storage.csproj" />
   </Folder>
   <Folder Name="/src/Host/">
     <Project Path="src/Host/CoreTemplate.Api/CoreTemplate.Api.csproj" />
   </Folder>
   <Folder Name="/src/Modules/" />
+  <Folder Name="/src/Modules/Archivos/">
+    <Project Path="src/Modules/Archivos/CoreTemplate.Modules.Archivos.Application/CoreTemplate.Modules.Archivos.Application.csproj" />
+    <Project Path="src/Modules/Archivos/CoreTemplate.Modules.Archivos.Domain/CoreTemplate.Modules.Archivos.Domain.csproj" />
+  </Folder>
   <Folder Name="/src/Modules/Auth/">
     <Project Path="src/Modules/Auth/CoreTemplate.Modules.Auth.Api/CoreTemplate.Modules.Auth.Api.csproj" />
     <Project Path="src/Modules/Auth/CoreTemplate.Modules.Auth.Application/CoreTemplate.Modules.Auth.Application.csproj" />
@@ -24,9 +32,31 @@
     <Project Path="src/Modules/Catalogos/CoreTemplate.Modules.Catalogos.Domain/CoreTemplate.Modules.Catalogos.Domain.csproj" />
     <Project Path="src/Modules/Catalogos/CoreTemplate.Modules.Catalogos.Infrastructure/CoreTemplate.Modules.Catalogos.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/Configuracion/">
+    <Project Path="src/Modules/Configuracion/CoreTemplate.Modules.Configuracion.Application/CoreTemplate.Modules.Configuracion.Application.csproj" />
+    <Project Path="src/Modules/Configuracion/CoreTemplate.Modules.Configuracion.Domain/CoreTemplate.Modules.Configuracion.Domain.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/EmailTemplates/">
+    <Project Path="src/Modules/EmailTemplates/CoreTemplate.Modules.EmailTemplates.Application/CoreTemplate.Modules.EmailTemplates.Application.csproj" />
+    <Project Path="src/Modules/EmailTemplates/CoreTemplate.Modules.EmailTemplates.Domain/CoreTemplate.Modules.EmailTemplates.Domain.csproj" />
+    <Project Path="src/Modules/EmailTemplates/CoreTemplate.Modules.EmailTemplates.Infrastructure/CoreTemplate.Modules.EmailTemplates.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Notificaciones/">
+    <Project Path="src/Modules/Notificaciones/CoreTemplate.Modules.Notificaciones.Application/CoreTemplate.Modules.Notificaciones.Application.csproj" />
+    <Project Path="src/Modules/Notificaciones/CoreTemplate.Modules.Notificaciones.Domain/CoreTemplate.Modules.Notificaciones.Domain.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/PdfTemplates/">
+    <Project Path="src/Modules/PdfTemplates/CoreTemplate.Modules.PdfTemplates.Application/CoreTemplate.Modules.PdfTemplates.Application.csproj" />
+    <Project Path="src/Modules/PdfTemplates/CoreTemplate.Modules.PdfTemplates.Domain/CoreTemplate.Modules.PdfTemplates.Domain.csproj" />
+  </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/CoreTemplate.Modules.Archivos.Tests/CoreTemplate.Modules.Archivos.Tests.csproj" />
     <Project Path="tests/CoreTemplate.Modules.Auth.Tests/CoreTemplate.Modules.Auth.Tests.csproj" />
     <Project Path="tests/CoreTemplate.Modules.Catalogos.Tests/CoreTemplate.Modules.Catalogos.Tests.csproj" />
+    <Project Path="tests/CoreTemplate.Modules.Configuracion.Tests/CoreTemplate.Modules.Configuracion.Tests.csproj" />
+    <Project Path="tests/CoreTemplate.Modules.EmailTemplates.Tests/CoreTemplate.Modules.EmailTemplates.Tests.csproj" />
+    <Project Path="tests/CoreTemplate.Modules.Notificaciones.Tests/CoreTemplate.Modules.Notificaciones.Tests.csproj" />
+    <Project Path="tests/CoreTemplate.Modules.PdfTemplates.Tests/CoreTemplate.Modules.PdfTemplates.Tests.csproj" />
     <Project Path="tests/CoreTemplate.SharedKernel.Tests/CoreTemplate.SharedKernel.Tests.csproj" />
   </Folder>
 </Solution>

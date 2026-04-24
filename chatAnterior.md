@@ -1,100 +1,92 @@
-ok, implementalo entonces, tambien documenta o comenta el codigo para que sea entendible
-
-
-Context
-Voy a revisar la estructura actual del módulo Auth para implementar todo de forma consistente.
+Buena pregunta. Déjame revisar el estado actual completo antes de responderte.
 
 2 directories listed
-CoreTemplate.Modules.Auth.Domain
-CoreTemplate.Modules.Auth.Application
-3 files read
-Usuario.cs
-Email.cs
-AuthRepositories.cs
-Tengo todo el contexto necesario. Voy a implementar por capas: Domain → Application → Infrastructure → Api. Empiezo con el Domain.
+Modules
+docs
+Tengo el panorama completo. Mi análisis honesto:
 
-2 files read
-AuthEvents.cs
-AuthSettings.cs
-Tengo todo el contexto. Implemento por capas. Empiezo con Domain :
+Lo que ya tienes — sólido
+Área	Estado
+Auth completo (JWT, 2FA, sesiones, roles, permisos, sucursales, multi-tenant, portal clientes)	✅ Implementado y documentado
+Building blocks base (SharedKernel, Infrastructure, Logging, Auditing, Monitoring)	✅ Implementado
+Email (Mailjet, SMTP, SendGrid)	✅ Implementado
+EmailTemplates (plantillas editables en BD, multi-tenant, handlers de Auth)	✅ Implementado
+Storage (Local, S3, Firebase)	✅ Implementado
+Archivos (metadatos en BD, multi-tenant)	✅ Implementado
+PdfTemplates (QuestPDF, 4 diseños, multi-tenant)	✅ Implementado
+Catálogos (patrón de referencia)	✅ Implementado
+Lo que falta — mi opinión honesta por categorías
+1. Notificaciones en tiempo real — alta prioridad
+Hoy tienes correo pero no notificaciones dentro del sistema. En cualquier ERP esto es crítico:
 
-Crear el enum EstadoUsuarioCliente
+Usuario recibe en la UI:
+  🔔 "Tu comprobante de pago está listo"
+  🔔 "Tu solicitud fue aprobada"
+  🔔 "Nuevo documento pendiente de firma"
 
-EstadoUsuarioCliente.cs
-+31
--0
+Copy
+Tecnología: SignalR (ya incluido en ASP.NET Core, sin paquetes extra).
+Patrón: un building block CoreTemplate.Notifications con INotificationSender.
 
-Undo
-Crear el enum TipoProveedorOAuth
+2. Módulo de Configuración del Sistema — alta prioridad
+Hoy la configuración vive en appsettings.json. Para un ERP real necesitas que el admin pueda cambiar parámetros desde la UI sin redeployar:
 
-TipoProveedorOAuth.cs
-+20
--0
+Tabla: Configuracion
+  Clave:  "sistema.nombre"          Valor: "Mi ERP"
+  Clave:  "sistema.moneda"          Valor: "USD"
+  Clave:  "sistema.zona-horaria"    Valor: "America/Managua"
+  Clave:  "factura.serie-actual"    Valor: "001"
+  Clave:  "nomina.dia-pago"         Valor: "15"s
 
-Undo
-Crear el aggregate UsuarioCliente
+Copy
+Ya tienes el patrón en Auth con ConfiguracionTenant. Esto sería lo mismo pero para parámetros de negocio.
 
-UsuarioCliente.cs
-+462
--0
+3. Módulo de Auditoría visible — alta prioridad
+Tienes CoreTemplate.Auditing que guarda logs automáticamente, pero no hay ningún endpoint para consultarlos. El admin no puede ver quién hizo qué.
 
-Undo
+GET /api/auditoria?entidad=Usuario&fechaDesde=2025-01-01
+GET /api/auditoria?usuarioId={id}
+GET /api/auditoria/{entidadId}
 
-Undo all changes
-Ahora agrego los eventos de dominio del portal al archivo de eventos existente:
+Copy
+4. Script de renombrado — alta prioridad para la plantilla
+El README menciona rename.ps1 pero no existe. Cuando alguien clone la plantilla y quiera renombrar CoreTemplate → MiSistema en todos los archivos, necesita ese script. Sin él la plantilla no es realmente "clonable y lista para usar".
 
-Agregar eventos de dominio del portal de clientes al archivo de eventos existente
+5. Tests — media prioridad
+Tienes 126 tests en Auth y Catálogos pero cero tests para los módulos nuevos:
 
-AuthEvents.cs
-+46
--0
+EmailTemplates.Tests
 
-Undo
-Ahora agrego el repositorio al archivo de repositorios existente:
+Archivos.Tests
 
-Agregar IUsuarioClienteRepository al archivo de repositorios
+PdfTemplates.Tests
 
-AuthRepositories.cs
-+40
--0
+Los building blocks tampoco tienen tests.
 
-Undo
-Necesito agregar el using de Aggregates al archivo de repositorios:
+6. Documentación de arquitectura actualizada — media prioridad
+docs/architecture/ARQUITECTURA.md fue escrito antes de agregar Email, Storage, Archivos y PdfTemplates. El diagrama de arquitectura ya no refleja el estado actual.
 
-Verificar usings — ya están correctos
+7. Mejoras documentadas pendientes — baja prioridad (cuando se necesiten)
+Ya documentadas, listas para implementar cuando llegue el momento:
 
-AuthRepositories.cs
-+0
--0
+Configuración de email por tenant (AES-256)
 
-Undo
-Ahora la capa Application — settings, abstracciones y commands:
+Configuración de PDF por tenant
 
-Agregar CustomerPortalSettings y configuraciones OAuth al archivo de settings
+Templates en múltiples idiomas
 
-AuthSettings.cs
-+81
--0
+Reintentos automáticos de email (Polly)
 
-Undo
-Ahora agrego la abstracción IProveedorOAuthService al archivo de servicios:
+Historial de correos enviados
 
-Agregar IProveedorOAuthService y OAuthUsuarioInfo al archivo de abstracciones
+Virus scanning en Storage
 
-IAuthServices.cs
-+32
--0
+Mi recomendación de orden
+1. rename.ps1          → hace la plantilla realmente usable hoy
+2. Módulo Configuración → cualquier sistema lo necesita desde el día 1
+3. Auditoría visible   → el building block ya existe, solo falta el endpoint
+4. Notificaciones      → SignalR, alto valor para cualquier módulo futuro
+5. Tests nuevos módulos → calidad y confianza
+6. Docs arquitectura   → mantener la documentación al día
 
-Undo
-Ahora creo los DTOs y Commands del portal:
-
-Crear DTOs del portal de clientes
-
-ClienteDtos.cs
-+39
--0
-
-Undo
-Crear todos los commands del portal de clientes en un solo archivo
-
-PortalClientesCommands.cs
+Copy

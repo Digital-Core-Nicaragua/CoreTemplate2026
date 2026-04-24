@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoreTemplate.Modules.PdfTemplates.Domain\CoreTemplate.Modules.PdfTemplates.Domain.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\CoreTemplate.Api.Common\CoreTemplate.Api.Common.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\CoreTemplate.Pdf\CoreTemplate.Pdf.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\CoreTemplate.SharedKernel\CoreTemplate.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\CoreTemplate.Infrastructure\CoreTemplate.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

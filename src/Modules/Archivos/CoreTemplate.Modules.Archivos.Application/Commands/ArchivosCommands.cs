@@ -14,7 +14,6 @@ public record SubirArchivoCommand(
     Stream Contenido,
     string NombreOriginal,
     string ContentType,
-    string Contexto,
     string ModuloOrigen,
     Guid? EntidadId = null) : IRequest<Result<ArchivoAdjuntoDto>>;
 
@@ -26,8 +25,10 @@ internal sealed class SubirArchivoHandler(
 {
     public async Task<Result<ArchivoAdjuntoDto>> Handle(SubirArchivoCommand cmd, CancellationToken ct)
     {
+        var contexto = StoragePathBuilder.Construir(cmd.ModuloOrigen, cmd.ContentType, DateTime.UtcNow);
+
         var storageResult = await storage.SubirAsync(new SubirArchivoRequest(
-            cmd.Contenido, cmd.NombreOriginal, cmd.Contexto, cmd.ContentType), ct);
+            cmd.Contenido, cmd.NombreOriginal, contexto, cmd.ContentType), ct);
 
         if (!storageResult.Exitoso)
             return Result<ArchivoAdjuntoDto>.Failure(storageResult.Error!);
@@ -42,7 +43,7 @@ internal sealed class SubirArchivoHandler(
             cmd.ContentType,
             storageResult.TamanioBytes,
             storageResult.Proveedor!,
-            cmd.Contexto,
+            contexto,
             cmd.ModuloOrigen,
             currentUser.Id ?? Guid.Empty,
             cmd.EntidadId,

@@ -49,3 +49,25 @@ Cualquier módulo inyecta `IEmailSender` y envía correos sin conocer el proveed
 
 **Estado:** Documentado — pendiente implementación
 **Fecha:** 2026-04-22
+
+---
+
+## Mejoras futuras documentadas
+
+| Documento | Descripción | Estado |
+|---|---|---|
+| **03-Mejoras/01-CONFIGURACION-EMAIL-POR-TENANT.md** | Cada tenant usa su propio proveedor y credenciales de email | 🔧 Pendiente |
+
+### Resumen de la mejora pendiente
+
+Hoy todos los correos salen desde un único remitente global (appsettings).
+La mejora permite que cada empresa (tenant) configure su propio proveedor:
+
+```
+Empresa A → Mailjet con sus propias credenciales → correos desde notificaciones@empresa-a.com
+Empresa B → SMTP corporativo                     → correos desde rrhh@empresa-b.com
+Empresa C → sin configuración                    → usa el sender global del sistema
+```
+
+Ver el documento para el plan completo de 5 fases, consideraciones de seguridad
+(cifrado AES-256 obligatorio), impacto en código existente y criterios de aceptación.

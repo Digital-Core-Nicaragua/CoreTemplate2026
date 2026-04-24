@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="NSubstitute" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Modules\EmailTemplates\CoreTemplate.Modules.EmailTemplates.Domain\CoreTemplate.Modules.EmailTemplates.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\EmailTemplates\CoreTemplate.Modules.EmailTemplates.Application\CoreTemplate.Modules.EmailTemplates.Application.csproj" />
+    <ProjectReference Include="..\..\src\Modules\EmailTemplates\CoreTemplate.Modules.EmailTemplates.Infrastructure\CoreTemplate.Modules.EmailTemplates.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\CoreTemplate.Email\CoreTemplate.Email.csproj" />
+  </ItemGroup>
+</Project>

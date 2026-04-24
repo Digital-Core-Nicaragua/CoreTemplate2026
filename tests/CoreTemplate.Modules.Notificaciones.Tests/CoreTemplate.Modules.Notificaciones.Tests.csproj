@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="NSubstitute" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Modules\Notificaciones\CoreTemplate.Modules.Notificaciones.Domain\CoreTemplate.Modules.Notificaciones.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Modules\Notificaciones\CoreTemplate.Modules.Notificaciones.Application\CoreTemplate.Modules.Notificaciones.Application.csproj" />
+    <ProjectReference Include="..\..\src\BuildingBlocks\CoreTemplate.Notifications\CoreTemplate.Notifications.csproj" />
+  </ItemGroup>
+</Project>

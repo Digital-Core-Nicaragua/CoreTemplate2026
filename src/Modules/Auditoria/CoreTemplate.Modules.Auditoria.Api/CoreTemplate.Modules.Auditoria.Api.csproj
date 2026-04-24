@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CoreTemplate.Modules.Auditoria.Application\CoreTemplate.Modules.Auditoria.Application.csproj" />
+    <ProjectReference Include="..\..\..\BuildingBlocks\CoreTemplate.Api.Common\CoreTemplate.Api.Common.csproj" />
+  </ItemGroup>
+</Project>

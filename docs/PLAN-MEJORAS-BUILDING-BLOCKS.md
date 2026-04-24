@@ -310,3 +310,48 @@ Infrastructure (implementaciones de SharedKernel.Abstractions)
 ---
 
 *Documento actualizado para reflejar implementación completada. Todas las fases están implementadas.*
+
+---
+
+## Mejoras adicionales documentadas (post-implementación inicial)
+
+### Configuración de Email por Tenant 🔧 Pendiente
+
+**Documento completo:** `docs/Email/03-Mejoras/01-CONFIGURACION-EMAIL-POR-TENANT.md`
+
+**Resumen:** Permite que cada empresa (tenant) configure su propio proveedor de email
+con sus propias credenciales, en lugar de usar el sender global del sistema.
+
+**Componentes nuevos:**
+- `ConfiguracionEmailTenant` aggregate (con cifrado AES-256 de credenciales)
+- `TenantAwareEmailSender` — resuelve el sender correcto por tenant en runtime
+- `EmailSenderFactory` — crea el sender con las credenciales descifradas del tenant
+- `IEncryptionService` / `AesEncryptionService` — cifrado de credenciales en BD
+- Endpoints: `GET/POST/DELETE /api/email-config` + `POST /api/email-config/probar`
+
+**Esfuerzo:** 3-5 días
+**Prerequisito:** Módulo EmailTemplates implementado ✅
+
+**Plan de 5 fases:**
+1. Infraestructura de cifrado AES-256
+2. Domain y Application (aggregate + commands + queries)
+3. Infrastructure (repositorio + factory + TenantAwareEmailSender)
+4. API (controller + contratos + permisos)
+5. Testing y validación
+
+**Impacto en código existente:** Mínimo — solo cambia el tipo inyectado en `EmailTemplateSender`
+(`IEmailSender` → `ITenantEmailSender`). El resto del sistema no cambia.
+
+---
+
+### Configuración de PDF por Tenant 🔧 Pendiente (futura)
+
+Similar a la configuración de email, pero para plantillas PDF.
+Cada tenant podría tener su propio logo, colores y datos corporativos
+sin necesidad de crear una plantilla nueva en BD.
+
+**Nota:** Ya está parcialmente cubierto por el aggregate `PdfPlantilla` con `IHasTenant`.
+La mejora adicional sería una tabla `ConfiguracionPdfTenant` con valores por defecto
+que se aplican automáticamente a todas las plantillas del tenant.
+
+**Documento:** Pendiente de crear cuando se decida implementar.
